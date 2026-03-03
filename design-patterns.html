@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Patterns — Interview Quiz</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 800px; width: 100%; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin-bottom: 5px; color: #fff; }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+        .progress-bar { width: 100%; height: 8px; background-color: var(--bg-card); border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--accent); width: 0%; transition: width 0.3s ease; }
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+        .card.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .category-badge { display: inline-block; background-color: rgba(59,130,246,0.2); color: #60a5fa; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .question-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn { background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 15px 20px; border-radius: 8px; font-size: 1rem; text-align: left; cursor: pointer; transition: all 0.2s; line-height: 1.4; }
+        .option-btn:hover:not(:disabled) { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .option-btn.correct { background-color: rgba(16,185,129,0.2); border-color: var(--success); }
+        .option-btn.wrong { background-color: rgba(239,68,68,0.2); border-color: var(--danger); opacity: 0.7; }
+        .option-btn:disabled { cursor: default; }
+        .explanation { margin-top: 20px; padding: 15px; background-color: rgba(255,255,255,0.05); border-left: 4px solid var(--accent); border-radius: 4px; font-size: 0.95rem; display: none; }
+        .explanation.show { display: block; animation: fadeIn 0.4s; }
+        .controls { margin-top: 25px; display: flex; justify-content: flex-end; }
+        .next-btn, .restart-btn { background-color: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; display: none; }
+        .next-btn.show, .restart-btn.show { display: block; }
+        .next-btn:hover, .restart-btn:hover { background-color: var(--accent-hover); }
+        .score-display { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted); }
+        #results-card { text-align: center; }
+        .final-score { font-size: 4rem; font-weight: 700; color: var(--accent); margin: 20px 0; }
+        #setup-card { text-align: center; }
+        .batch-controls { display: flex; flex-direction: column; gap: 15px; margin: 30px 0; }
+        .batch-btn { background-color: rgba(255,255,255,0.05); border: 2px solid var(--accent); color: var(--text-main); padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; }
+        .batch-btn:hover { background-color: var(--accent); }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Design Patterns</h1>
+            <p>GoF creational, structural, and behavioral patterns with real-world C#/.NET examples</p>
+        </div>
+
+        <div class="card active" id="setup-card">
+            <h2>50 Questions on Design Patterns</h2>
+            <p>Covers Creational (Factory, Builder, Singleton), Structural (Adapter, Decorator, Proxy, Facade), Behavioral (Strategy, Observer, Chain of Responsibility, Mediator), and modern .NET patterns.</p>
+            <div class="batch-controls">
+                <button class="batch-btn" onclick="startQuiz(20)">Random 20-Question Sprint</button>
+                <button class="batch-btn" onclick="startQuiz(50)">Marathon: All 50 Questions</button>
+            </div>
+        </div>
+
+        <div id="quiz-area" style="display: none;">
+            <div class="score-display">
+                <span id="q-counter">Question 1 of X</span>
+                <span id="score-tracker">Score: 0</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+            <div id="quiz-container"></div>
+        </div>
+
+        <div class="card" id="results-card">
+            <h2>Assessment Complete!</h2>
+            <div class="final-score" id="final-score-text">0/X</div>
+            <p id="feedback-text" style="font-size: 1.1rem; margin-bottom: 30px;"></p>
+            <button class="restart-btn show" onclick="location.reload()" style="margin: 0 auto;">Back to Start Menu</button>
+        </div>
+    </div>
+
+    <script>
+    const allQuestions = [
+        // ===== CREATIONAL PATTERNS =====
+        { category: "Factory Method", question: "What problem does the Factory Method pattern solve?", options: ["Reducing the number of classes.", "It delegates object creation to subclasses, decoupling the client from concrete types and allowing new types without modifying existing code.", "It makes objects immutable.", "It provides thread safety for constructors."], correctIndex: 1, explanation: "Instead of `new ConcreteProduct()`, the client calls factory.Create(). The factory decides which concrete class to instantiate. Adding a new product = new factory, no client changes." },
+        { category: "Factory Method", question: "How does Factory Method differ from Abstract Factory?", options: ["They're the same pattern.", "Factory Method creates one product via inheritance/overriding. Abstract Factory creates families of related products via composition.", "Factory Method is for structs, Abstract Factory for classes.", "Abstract Factory is deprecated."], correctIndex: 1, explanation: "Factory Method: one method, one product. Abstract Factory: a factory interface with methods for creating an entire family (e.g., CreateButton, CreateTextbox for a UI toolkit)." },
+        { category: "Abstract Factory", question: "When should you use the Abstract Factory pattern?", options: ["When you only need one type of object.", "When a system must be independent of how its products are created, and you need families of related objects that work together.", "When you want to avoid interfaces.", "When performance is critical."], correctIndex: 1, explanation: "E.g., IUIFactory with CreateButton() and CreateCheckbox(). WindowsFactory returns Windows controls, MacFactory returns Mac controls. The client code works with either." },
+        { category: "Abstract Factory", question: "In ASP.NET Core, which built-in feature resembles the Abstract Factory pattern?", options: ["Razor Pages", "IHttpClientFactory — it creates configured HttpClient instances without the client knowing the setup details.", "Entity Framework migrations", "Endpoint routing"], correctIndex: 1, explanation: "IHttpClientFactory creates HttpClient instances with pre-configured handlers, base addresses, and policies. The consuming code just asks for a client by name." },
+        { category: "Builder", question: "What is the main benefit of the Builder pattern?", options: ["It makes classes abstract.", "It constructs complex objects step-by-step, separating construction from representation and avoiding constructors with many parameters.", "It replaces the need for properties.", "It's faster than using constructors."], correctIndex: 1, explanation: "Instead of new Pizza(size, cheese, pepperoni, mushrooms, olives...), use: pizzaBuilder.SetSize(L).AddCheese().AddPepperoni().Build(). Clear, readable, flexible." },
+        { category: "Builder", question: "How does the Fluent Builder pattern work in C#?", options: ["By using static methods.", "Each builder method returns 'this', enabling method chaining: builder.WithName('x').WithAge(30).Build().", "By using extension methods only.", "It requires a separate Director class."], correctIndex: 1, explanation: "Returning 'this' from each method enables the fluent API. Common in .NET: HostBuilder, IServiceCollection, EF Core ModelBuilder all use this pattern." },
+        { category: "Singleton", question: "Why are traditional static Singletons considered problematic in modern C#?", options: ["They use too much memory.", "They hide dependencies, make unit testing extremely difficult (can't mock them), and create hidden global state.", "Singletons are thread-unsafe by definition.", "C# doesn't support static classes."], correctIndex: 1, explanation: "If a service depends on a static Singleton, you can't substitute it with a mock in tests. DI containers (AddSingleton<T>) solve this by making the singleton injectable and mockable." },
+        { category: "Singleton", question: "How does AddSingleton<T>() in ASP.NET Core DI solve the Singleton anti-pattern?", options: ["It doesn't use a singleton at all.", "It provides a single instance but through an interface, preserving testability — you can register a mock in tests.", "It creates a new instance per request.", "It uses the static keyword internally."], correctIndex: 1, explanation: "services.AddSingleton<ICache, RedisCache>() gives you singleton lifetime without the static coupling. Tests can register a different ICache implementation." },
+        { category: "Prototype", question: "What does the Prototype pattern do?", options: ["It creates classes from UML diagrams.", "It creates new objects by cloning an existing instance, avoiding the cost of constructing from scratch.", "It defines interface prototypes.", "It generates code at compile time."], correctIndex: 1, explanation: "When creating an object is expensive (DB query, file parsing), clone an existing one and modify. C#: implement ICloneable or a custom DeepCopy method." },
+        { category: "Prototype", question: "What is the difference between shallow copy and deep copy in the context of the Prototype pattern?", options: ["There is no difference.", "Shallow copy duplicates the object but shares references to nested objects. Deep copy recursively duplicates everything, including nested objects.", "Shallow copy is for value types, deep copy for reference types.", "Deep copy is always slower and should be avoided."], correctIndex: 1, explanation: "MemberwiseClone() in C# does shallow copy. If the cloned object modifies a shared nested list, the original is affected too. Deep copy prevents this." },
+
+        // ===== STRUCTURAL PATTERNS =====
+        { category: "Adapter", question: "What problem does the Adapter pattern solve?", options: ["Making classes smaller.", "It allows incompatible interfaces to work together by wrapping one interface with another that the client expects.", "It removes dependencies between classes.", "It speeds up method calls."], correctIndex: 1, explanation: "Your code expects ILogger. A third-party library uses SerilogLogger with different method signatures. An adapter wraps Serilog behind your ILogger interface." },
+        { category: "Adapter", question: "In Clean Architecture, where is the Adapter pattern commonly used?", options: ["In the Domain layer.", "In the Infrastructure layer — adapting external services (APIs, SDKs, legacy systems) to interfaces defined by the Application layer.", "In the Presentation layer only.", "Adapter isn't used in Clean Architecture."], correctIndex: 1, explanation: "Application defines IEmailSender. Infrastructure creates SendGridAdapter implementing IEmailSender by wrapping SendGrid's SDK. The application never sees SendGrid." },
+        { category: "Decorator", question: "What is the Decorator pattern?", options: ["Adding CSS styling to HTML elements.", "Wrapping an object with another object of the same interface to add behavior dynamically, without modifying the original class.", "Inheriting from multiple base classes.", "A C# attribute like [Authorize]."], correctIndex: 1, explanation: "An IRepository wrapped by CachingRepository (adds caching) wrapped by LoggingRepository (adds logging). Each layer adds one behavior. Russian nesting dolls." },
+        { category: "Decorator", question: "How is the Decorator pattern used with ASP.NET Core DI?", options: ["It's not possible with DI.", "Using Scrutor's .Decorate<TInterface, TDecorator>() or manual registration: resolve inner, wrap with outer, register outer.", "By using middleware instead.", "By creating abstract base classes."], correctIndex: 1, explanation: "services.AddScoped<IRepo, EfRepo>(); then Scrutor: services.Decorate<IRepo, CachingRepo>(); CachingRepo takes IRepo in its constructor and wraps it." },
+        { category: "Decorator", question: "How does the Decorator pattern differ from inheritance?", options: ["They're identical approaches.", "Decorator adds behavior at runtime via composition, while inheritance adds it at compile time. Decorators can be stacked dynamically.", "Inheritance is more flexible.", "Decorator can only be used once per class."], correctIndex: 1, explanation: "With inheritance, you'd need CachingLoggingRepo, LoggingCachingRepo, etc. — combinatorial explosion. Decorators compose freely: wrap any combination at runtime." },
+        { category: "Proxy", question: "What is the Proxy pattern?", options: ["A web proxy server.", "A surrogate object that controls access to another object — adding lazy loading, access control, logging, or caching transparently.", "A design pattern for REST APIs.", "A .NET delegate."], correctIndex: 1, explanation: "A LazyLoadingProxy for an image: it implements IImage but only loads the real image from disk when Display() is first called. The client doesn't know it's a proxy." },
+        { category: "Proxy", question: "What are the common types of Proxy?", options: ["Static and dynamic.", "Virtual (lazy loading), Protection (access control), Remote (network transparency), and Caching proxy.", "Read proxy and write proxy.", "Sync proxy and async proxy."], correctIndex: 1, explanation: "Virtual: delay expensive init. Protection: check permissions before calling real object. Remote: hide network calls (like gRPC client). Caching: store results." },
+        { category: "Facade", question: "What does the Facade pattern provide?", options: ["A new database connection.", "A simplified, unified interface to a complex subsystem, hiding internal complexity from the client.", "A way to create objects.", "An event-driven architecture."], correctIndex: 1, explanation: "Instead of calling OrderValidator, InventoryChecker, PaymentProcessor, and ShippingService separately, OrderFacade.PlaceOrder() orchestrates all of them behind one method." },
+        { category: "Facade", question: "How does Facade differ from Adapter?", options: ["They're the same pattern.", "Adapter makes an incompatible interface compatible. Facade simplifies a complex system into one easy-to-use interface.", "Facade is for UI, Adapter is for backend.", "Adapter wraps one class, Facade wraps many."], correctIndex: 1, explanation: "Adapter: translate interface A to interface B. Facade: simplify interfaces A + B + C + D into one clean interface F." },
+        { category: "Composite", question: "What does the Composite pattern model?", options: ["Database composite keys.", "Tree structures where individual objects and compositions of objects are treated uniformly through a common interface.", "Multiple inheritance.", "Composite design documents."], correctIndex: 1, explanation: "A FileSystemItem interface implemented by File (leaf) and Directory (composite containing children). directory.GetSize() recursively sums all children's sizes." },
+
+        // ===== BEHAVIORAL PATTERNS =====
+        { category: "Strategy", question: "What does the Strategy pattern do?", options: ["Defines a military strategy.", "Defines a family of interchangeable algorithms behind a common interface, letting the client switch algorithms at runtime.", "Creates a step-by-step execution plan.", "Optimizes sorting algorithms."], correctIndex: 1, explanation: "IDiscountStrategy with StudentDiscount, VIPDiscount, SeasonalDiscount. The checkout service uses whichever strategy is injected — no if/else chains." },
+        { category: "Strategy", question: "How is the Strategy pattern typically implemented with ASP.NET Core DI?", options: ["Using static methods.", "Register multiple implementations and use a factory or keyed services to resolve the correct strategy at runtime.", "Hard-code the strategy selection in Program.cs.", "Use reflection to find strategies."], correctIndex: 1, explanation: ".NET 8 keyed services: services.AddKeyedScoped<IStrategy, StrategyA>('a'). Or inject IEnumerable<IStrategy> and select by type. Clean runtime selection." },
+        { category: "Observer", question: "What does the Observer pattern define?", options: ["A surveillance system.", "A one-to-many dependency: when one object (Subject) changes state, all its dependents (Observers) are notified automatically.", "A logging framework.", "A database trigger."], correctIndex: 1, explanation: "When an Order changes status, all subscribers (EmailService, InventoryService, AnalyticsService) are notified. Publisher doesn't know about subscribers." },
+        { category: "Observer", question: "How does the Observer pattern manifest in C#?", options: ["Only through third-party libraries.", "C# events and delegates are a built-in implementation of Observer. Also: IObservable<T>/IObserver<T> and domain events via MediatR.", "Through abstract classes only.", "C# doesn't support Observer."], correctIndex: 1, explanation: "event EventHandler<OrderPlacedArgs> OrderPlaced; is Observer pattern. publisher.OrderPlaced += subscriber.HandleOrder; subscribers are notified automatically." },
+        { category: "Chain of Responsibility", question: "What does the Chain of Responsibility pattern do?", options: ["Creates a blockchain.", "Passes a request along a chain of handlers; each handler either processes the request or passes it to the next handler.", "Defines a linked list data structure.", "Manages responsibility assignment in a team."], correctIndex: 1, explanation: "ASP.NET Core middleware IS Chain of Responsibility. Each middleware either handles the request (e.g., returns 401) or calls next() to pass it along." },
+        { category: "Chain of Responsibility", question: "Which ASP.NET Core feature is a direct implementation of Chain of Responsibility?", options: ["Entity Framework", "The middleware pipeline — each middleware calls next(context) or short-circuits the chain.", "Razor Pages", "Model binding"], correctIndex: 1, explanation: "app.UseAuthentication() -> app.UseAuthorization() -> app.UseEndpoints(). Each middleware decides to continue or stop. Classic Chain of Responsibility." },
+        { category: "Mediator", question: "What does the Mediator pattern do?", options: ["Mediates legal disputes.", "Reduces direct dependencies between objects by having them communicate through a central mediator object.", "Creates middleware pipelines.", "Manages database connections."], correctIndex: 1, explanation: "Instead of components talking directly to each other (N*N dependencies), they all talk through the Mediator (N dependencies). MediatR in .NET is named after this pattern." },
+        { category: "Mediator", question: "How does MediatR implement the Mediator pattern?", options: ["It creates REST APIs.", "Controllers send requests (Commands/Queries) to MediatR. MediatR routes them to the correct handler. Neither knows about the other.", "It mediates between databases.", "It's a message queue."], correctIndex: 1, explanation: "Controller sends CreateOrderCommand to mediator.Send(). MediatR finds CreateOrderCommandHandler and invokes it. The controller has zero reference to the handler." },
+        { category: "Command Pattern", question: "What does the Command pattern do?", options: ["Executes shell commands.", "Encapsulates a request as an object, allowing parameterization, queuing, logging, and undo/redo of operations.", "Creates command-line interfaces.", "Defines database commands."], correctIndex: 1, explanation: "Each action becomes an object: MoveCommand, DeleteCommand, ResizeCommand. They can be stored in a history stack for undo, serialized for replay, or queued for later." },
+        { category: "Command Pattern", question: "How does CQRS relate to the Command pattern?", options: ["They're unrelated.", "CQRS Commands (CreateOrderCommand) are a direct application of the Command pattern — requests encapsulated as objects, processed by handlers.", "CQRS replaces the Command pattern.", "The Command pattern is only for UI."], correctIndex: 1, explanation: "CreateOrderCommand carries all data needed. CreateOrderCommandHandler executes it. The command object can be logged, validated, retried — all Command pattern benefits." },
+        { category: "Template Method", question: "What does the Template Method pattern define?", options: ["A document template.", "A skeleton algorithm in a base class, deferring specific steps to subclasses via abstract/virtual methods.", "A generic type parameter.", "A method that returns a template string."], correctIndex: 1, explanation: "Base class: Process() calls Validate() -> Transform() -> Save(). Subclasses override Transform() with specific logic. The overall flow is fixed; details vary." },
+        { category: "Template Method", question: "How does Template Method differ from Strategy?", options: ["They're identical.", "Template Method uses inheritance (subclass overrides steps). Strategy uses composition (inject different algorithm objects).", "Strategy is for creational, Template Method for structural.", "Template Method is always faster."], correctIndex: 1, explanation: "Template Method: 'Override my steps.' Strategy: 'Give me an object that does this step.' Strategy is more flexible; Template Method is simpler for fixed flows." },
+        { category: "State", question: "What does the State pattern do?", options: ["Manages Redux state.", "Allows an object to alter its behavior when its internal state changes, appearing to change its class.", "Persists data to a database.", "Creates state machines for UI."], correctIndex: 1, explanation: "An Order with states: Draft -> Submitted -> Paid -> Shipped. Each state is a class implementing IOrderState. Calling order.Process() delegates to the current state object." },
+        { category: "State", question: "How does the State pattern eliminate complex if/else chains?", options: ["It uses switch expressions instead.", "Each state is a separate class with its own behavior. Transitions are explicit. No giant if(state == 'draft') else if(state == 'paid')... blocks.", "It uses enums instead of strings.", "It doesn't — it adds more complexity."], correctIndex: 1, explanation: "Adding a new state (e.g., 'OnHold') means creating a new class implementing IOrderState. No existing code is modified — it's also OCP compliant." },
+
+        // ===== MODERN / .NET-SPECIFIC PATTERNS =====
+        { category: "Repository", question: "Is the Repository pattern still valuable with Entity Framework Core?", options: ["Always — repositories are mandatory.", "It depends. EF Core's DbSet is already a repository. A generic repo over it is often an anti-pattern, but specific repos with domain-oriented methods add value.", "Never — EF Core replaces repositories entirely.", "Only for testing."], correctIndex: 1, explanation: "A generic Repository<T> hiding DbSet adds no value. But IOrderRepository.GetPendingOrdersForShipping() encapsulates a meaningful domain query — that's valuable." },
+        { category: "Unit of Work", question: "What is the Unit of Work pattern?", options: ["A pattern for measuring developer productivity.", "It tracks all changes made during a business transaction and commits them atomically. In EF Core, DbContext IS a Unit of Work.", "A pattern for parallel processing.", "A logging pattern."], correctIndex: 1, explanation: "DbContext tracks added/modified/deleted entities. SaveChanges() commits everything in one database transaction. This IS Unit of Work — no need to create another one." },
+        { category: "Specification", question: "What does the Specification pattern encapsulate?", options: ["API specifications like OpenAPI.", "Business query criteria as reusable, composable objects that can be combined with AND/OR logic.", "Hardware specifications.", "Test specifications."], correctIndex: 1, explanation: "new ActiveOrdersSpec().And(new OrdersForCustomerSpec(id)) creates a composable filter. The repository evaluates it without knowing the business rules." },
+        { category: "Options Pattern", question: "What is the Options pattern in ASP.NET Core?", options: ["A dropdown UI component pattern.", "A pattern for binding configuration sections to strongly-typed C# classes using IOptions<T>, IOptionsMonitor<T>, or IOptionsSnapshot<T>.", "A pattern for optional method parameters.", "A pattern for nullable types."], correctIndex: 1, explanation: "services.Configure<SmtpSettings>(config.GetSection('Smtp')). Inject IOptions<SmtpSettings> — strongly typed, validated, and reloadable configuration." },
+        { category: "Outbox Pattern", question: "What problem does the Outbox pattern solve?", options: ["Email outbox management.", "Ensuring atomicity between database writes and event publishing — if DB succeeds but message broker fails, events are still eventually dispatched.", "Organizing output files.", "Managing background jobs."], correctIndex: 1, explanation: "Save entity + save event to OutboxMessages table in ONE transaction. A background job reads OutboxMessages and publishes them. No event is ever lost." },
+        { category: "Circuit Breaker", question: "What does the Circuit Breaker pattern prevent?", options: ["Electrical overloads.", "Cascading failures: if a downstream service is failing, stop calling it immediately instead of waiting for timeouts that exhaust your threads.", "SQL injection attacks.", "Memory leaks."], correctIndex: 1, explanation: "States: Closed (normal) -> Open (failing, reject immediately) -> Half-Open (test with one request). Polly implements this in .NET with AddPolicyHandler()." },
+        { category: "Circuit Breaker", question: "How do you implement Circuit Breaker in .NET?", options: ["Manual try-catch with counters.", "Using Polly: Policy.Handle<HttpRequestException>().CircuitBreaker(3, TimeSpan.FromSeconds(30)) — opens after 3 failures, stays open 30 seconds.", "Using Thread.Sleep between retries.", "Only available in Spring Boot, not .NET."], correctIndex: 1, explanation: "Polly integrates with IHttpClientFactory. The circuit breaker wraps HTTP calls transparently. When open, it fails fast without making the network call." },
+        { category: "CQRS Pattern", question: "How do you decide between Vertical Slice and Clean Architecture layering?", options: ["Always use Clean Architecture.", "Vertical Slice organizes by feature (each slice has its own handler, model, validation). Clean Architecture organizes by technical layer. Choose based on team size and domain complexity.", "Vertical Slice is always better.", "They can't be combined."], correctIndex: 1, explanation: "Small teams with many independent features benefit from Vertical Slice. Complex shared domain logic benefits from Clean Architecture layers. Some combine both." },
+        { category: "Strangler Fig", question: "What is the Strangler Fig pattern?", options: ["A gardening technique.", "Incrementally replacing a legacy system by routing requests through a facade that gradually shifts traffic from old to new implementations.", "A compression algorithm.", "A database migration strategy."], correctIndex: 1, explanation: "Put a proxy in front of the monolith. Rewrite features one by one as new services. Route their URLs to the new service. The monolith slowly 'strangled' away." },
+        { category: "Saga Pattern", question: "What does the Saga pattern manage?", options: ["Norse mythology stories.", "Distributed transactions across microservices using a sequence of local transactions with compensating actions for failures.", "Database saga logging.", "Long-running UI wizards."], correctIndex: 1, explanation: "Step 1: Reserve inventory. Step 2: Charge payment. If Step 2 fails, compensate Step 1 (release inventory). No distributed locks needed." },
+        { category: "Saga Pattern", question: "What are the two Saga coordination approaches?", options: ["Sync and async.", "Choreography (each service reacts to events) and Orchestration (a central coordinator directs the flow).", "Push and pull.", "Master and slave."], correctIndex: 1, explanation: "Choreography: OrderService emits OrderCreated, PaymentService reacts. Orchestration: SagaOrchestrator explicitly calls each step. Orchestration is easier to debug." },
+        { category: "Event Sourcing", question: "What is Event Sourcing?", options: ["Sourcing events from a message queue.", "Instead of storing current state, storing an append-only log of events (OrderCreated, ItemAdded, PaymentReceived). Current state is derived by replaying events.", "A frontend state management pattern.", "A logging framework."], correctIndex: 1, explanation: "The event log IS the source of truth. You can rebuild any past state by replaying events up to that point. Perfect audit trail. Used with CQRS for read projections." },
+        { category: "Anti-Corruption Layer", question: "When should you use an Anti-Corruption Layer?", options: ["When integrating with any external API.", "When integrating with a legacy system or external service whose model would corrupt your clean domain if used directly.", "Only in monolithic applications.", "Only when using microservices."], correctIndex: 1, explanation: "The legacy system returns { usr_nm: 'John', bal_amt: 100 }. Your ACL translates this to your domain: new User('John', new Money(100)). Your domain stays clean." },
+        { category: "Retry Pattern", question: "What is the difference between simple retry and retry with exponential backoff?", options: ["There is no difference.", "Simple retry repeats immediately. Exponential backoff waits progressively longer (1s, 2s, 4s, 8s) to give the failing service time to recover.", "Exponential backoff only works with databases.", "Simple retry is always better."], correctIndex: 1, explanation: "Immediate retries can overwhelm a struggling service. Exponential backoff with jitter spreads out retry attempts, reducing thundering herd problems." },
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedQuestions = [];
+    let currentTotalQuestions = 20;
+
+    const setupCard = document.getElementById('setup-card');
+    const quizArea = document.getElementById('quiz-area');
+    const quizContainer = document.getElementById('quiz-container');
+    const qCounter = document.getElementById('q-counter');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressFill = document.getElementById('progress');
+    const resultsCard = document.getElementById('results-card');
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    window.startQuiz = function(numQuestions) {
+        currentTotalQuestions = numQuestions;
+        selectedQuestions = shuffleArray(allQuestions).slice(0, currentTotalQuestions);
+        currentQuestionIndex = 0;
+        score = 0;
+        setupCard.classList.remove('active');
+        setupCard.style.display = 'none';
+        quizArea.style.display = 'block';
+        resultsCard.classList.remove('active');
+        updateScoreboard();
+        renderQuestion();
+    };
+
+    function updateScoreboard() {
+        qCounter.innerText = `Question ${currentQuestionIndex + 1} of ${currentTotalQuestions}`;
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex) / currentTotalQuestions) * 100}%`;
+    }
+
+    function renderQuestion() {
+        quizContainer.innerHTML = '';
+        const q = selectedQuestions[currentQuestionIndex];
+        const card = document.createElement('div');
+        card.className = 'card active';
+        card.innerHTML = `
+            <div class="category-badge">${q.category}</div>
+            <div class="question-text">${q.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="options">
+                ${q.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${q.correctIndex}, this)">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</button>`).join('')}
+            </div>
+            <div class="explanation" id="expl-${currentQuestionIndex}"><strong>Explanation:</strong> ${q.explanation}</div>
+            <div class="controls"><button class="next-btn" id="next-${currentQuestionIndex}" onclick="nextQuestion()">Continue</button></div>
+        `;
+        quizContainer.appendChild(card);
+        updateScoreboard();
+    }
+
+    window.checkAnswer = function(selectedIndex, correctIndex, btnElement) {
+        const buttons = btnElement.parentElement.querySelectorAll('.option-btn');
+        const nextBtn = document.getElementById(`next-${currentQuestionIndex}`);
+        const explanation = document.getElementById(`expl-${currentQuestionIndex}`);
+        buttons.forEach(b => b.disabled = true);
+        if (selectedIndex === correctIndex) { btnElement.classList.add('correct'); score++; }
+        else { btnElement.classList.add('wrong'); buttons[correctIndex].classList.add('correct'); }
+        explanation.classList.add('show');
+        nextBtn.classList.add('show');
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex + 1) / currentTotalQuestions) * 100}%`;
+    };
+
+    window.nextQuestion = function() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentTotalQuestions) renderQuestion();
+        else showResults();
+    };
+
+    function showResults() {
+        quizArea.style.display = 'none';
+        document.getElementById('final-score-text').innerText = `${score} / ${currentTotalQuestions}`;
+        let percentage = score / currentTotalQuestions;
+        let feedback = percentage >= 0.8 ? "Outstanding! You have deep knowledge of design patterns and can apply them fluently in real-world architecture." :
+            percentage >= 0.6 ? "Solid base! Focus on distinguishing similar patterns (Strategy vs Template Method, Adapter vs Facade) and their real-world .NET usage." :
+            "Keep studying! Start with the most common ones: Strategy, Observer, Decorator, Factory, and Builder. Understand the problems they solve, not just their structure.";
+        document.getElementById('feedback-text').innerText = feedback;
+        resultsCard.classList.add('active');
+    }
+    </script>
+</body>
+</html>

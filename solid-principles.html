@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLID Principles — Interview Quiz</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 800px; width: 100%; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin-bottom: 5px; color: #fff; }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+        .progress-bar { width: 100%; height: 8px; background-color: var(--bg-card); border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--accent); width: 0%; transition: width 0.3s ease; }
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+        .card.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .category-badge { display: inline-block; background-color: rgba(59,130,246,0.2); color: #60a5fa; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .question-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn { background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 15px 20px; border-radius: 8px; font-size: 1rem; text-align: left; cursor: pointer; transition: all 0.2s; line-height: 1.4; }
+        .option-btn:hover:not(:disabled) { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .option-btn.correct { background-color: rgba(16,185,129,0.2); border-color: var(--success); }
+        .option-btn.wrong { background-color: rgba(239,68,68,0.2); border-color: var(--danger); opacity: 0.7; }
+        .option-btn:disabled { cursor: default; }
+        .explanation { margin-top: 20px; padding: 15px; background-color: rgba(255,255,255,0.05); border-left: 4px solid var(--accent); border-radius: 4px; font-size: 0.95rem; display: none; }
+        .explanation.show { display: block; animation: fadeIn 0.4s; }
+        .controls { margin-top: 25px; display: flex; justify-content: flex-end; }
+        .next-btn, .restart-btn { background-color: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; display: none; }
+        .next-btn.show, .restart-btn.show { display: block; }
+        .next-btn:hover, .restart-btn:hover { background-color: var(--accent-hover); }
+        .score-display { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted); }
+        #results-card { text-align: center; }
+        .final-score { font-size: 4rem; font-weight: 700; color: var(--accent); margin: 20px 0; }
+        #setup-card { text-align: center; }
+        .batch-controls { display: flex; flex-direction: column; gap: 15px; margin: 30px 0; }
+        .batch-btn { background-color: rgba(255,255,255,0.05); border: 2px solid var(--accent); color: var(--text-main); padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; }
+        .batch-btn:hover { background-color: var(--accent); }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SOLID Principles</h1>
+            <p>Deep-dive quiz on the five fundamental OOP design principles</p>
+        </div>
+
+        <div class="card active" id="setup-card">
+            <h2>50 Questions on SOLID</h2>
+            <p>Covers Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion with real-world C#/.NET scenarios.</p>
+            <div class="batch-controls">
+                <button class="batch-btn" onclick="startQuiz(20)">Random 20-Question Sprint</button>
+                <button class="batch-btn" onclick="startQuiz(50)">Marathon: All 50 Questions</button>
+            </div>
+        </div>
+
+        <div id="quiz-area" style="display: none;">
+            <div class="score-display">
+                <span id="q-counter">Question 1 of X</span>
+                <span id="score-tracker">Score: 0</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+            <div id="quiz-container"></div>
+        </div>
+
+        <div class="card" id="results-card">
+            <h2>Assessment Complete!</h2>
+            <div class="final-score" id="final-score-text">0/X</div>
+            <p id="feedback-text" style="font-size: 1.1rem; margin-bottom: 30px;"></p>
+            <button class="restart-btn show" onclick="location.reload()" style="margin: 0 auto;">Back to Start Menu</button>
+        </div>
+    </div>
+
+    <script>
+    const allQuestions = [
+        // ===== SINGLE RESPONSIBILITY PRINCIPLE (SRP) =====
+        { category: "SRP", question: "What does the Single Responsibility Principle state?", options: ["A class should have only one method.", "A class should have only one reason to change.", "A class should only be instantiated once.", "A class should only depend on one interface."], correctIndex: 1, explanation: "SRP says each class should have one, and only one, reason to change — meaning it encapsulates exactly one responsibility or concern." },
+        { category: "SRP", question: "A class handles both user authentication AND sends email notifications. Which SOLID principle does this violate?", options: ["Open/Closed Principle", "Liskov Substitution Principle", "Single Responsibility Principle", "Dependency Inversion Principle"], correctIndex: 2, explanation: "This class has two reasons to change: auth logic changes or email logic changes. SRP says split them into separate classes." },
+        { category: "SRP", question: "How do you refactor a 'GodController' in ASP.NET Core that handles users, orders, and payments?", options: ["Add more methods to keep everything centralized.", "Split it into UsersController, OrdersController, and PaymentsController.", "Make it abstract and inherit from it.", "Move all logic to a single service class."], correctIndex: 1, explanation: "Each controller should handle one resource/domain. A GodController violates SRP by mixing multiple responsibilities." },
+        { category: "SRP", question: "In the context of SRP, what does 'reason to change' mean?", options: ["A bug fix in the class.", "A change request from a single stakeholder or business requirement.", "A refactoring session.", "A performance optimization."], correctIndex: 1, explanation: "Robert C. Martin defines 'reason to change' as a change driven by a particular actor or stakeholder. Different stakeholders = different responsibilities." },
+        { category: "SRP", question: "A Repository class in EF Core also contains caching logic and logging. How do you fix the SRP violation?", options: ["It's fine — repositories should handle everything data-related.", "Extract caching into a CachingDecorator and logging into a LoggingDecorator or middleware.", "Move caching and logging into the controller.", "Create a base class with all three concerns."], correctIndex: 1, explanation: "The Decorator pattern lets you wrap the repository with caching and logging layers, each in its own class with a single responsibility." },
+        { category: "SRP", question: "Which of these class names most likely violates SRP?", options: ["InvoiceRepository", "EmailService", "UserManagerAndNotifier", "PaymentGateway"], correctIndex: 2, explanation: "'UserManagerAndNotifier' literally describes two responsibilities in its name. The 'And' is a code smell for SRP violations." },
+        { category: "SRP", question: "A service class validates input, calls the database, maps DTOs, and sends events. How many responsibilities does it have?", options: ["One — it's a service, that's its job.", "Two — validation and persistence.", "Four — validation, data access, mapping, and eventing.", "Three — the mapping doesn't count."], correctIndex: 2, explanation: "Each of those concerns could change independently. SRP suggests extracting a Validator, a Repository, a Mapper, and an EventPublisher." },
+        { category: "SRP", question: "How does SRP relate to testability?", options: ["SRP makes classes harder to test because they're smaller.", "SRP has no effect on testing.", "Classes with a single responsibility are easier to test because they have fewer dependencies and simpler behavior.", "SRP only helps integration tests, not unit tests."], correctIndex: 2, explanation: "A class doing one thing is easier to set up in tests, requires fewer mocks, and has clearer expected behavior." },
+        { category: "SRP", question: "A middleware in ASP.NET Core handles authentication, rate limiting, and request logging. Does this violate SRP?", options: ["No — middleware is supposed to handle cross-cutting concerns.", "Yes — each concern should be a separate middleware in the pipeline.", "No — it's just one class.", "Yes — but only if it exceeds 100 lines of code."], correctIndex: 1, explanation: "ASP.NET Core's middleware pipeline is specifically designed to compose single-responsibility middleware components in order." },
+        { category: "SRP", question: "What is the relationship between SRP and high cohesion?", options: ["They are opposites.", "SRP leads to high cohesion — all members of a class relate to its single responsibility.", "High cohesion means putting everything in one class.", "They are unrelated concepts."], correctIndex: 1, explanation: "A class following SRP naturally has high cohesion: every method and field directly relates to the class's single purpose." },
+
+        // ===== OPEN/CLOSED PRINCIPLE (OCP) =====
+        { category: "OCP", question: "What does the Open/Closed Principle state?", options: ["Classes should be open for modification and closed for extension.", "Classes should be open for extension but closed for modification.", "Classes should never be modified after first deployment.", "Classes should be open to all developers on the team."], correctIndex: 1, explanation: "OCP means you should be able to add new behavior (open for extension) without changing existing code (closed for modification)." },
+        { category: "OCP", question: "A switch statement that handles different discount types (Student, Senior, VIP) needs a new type added. Which principle is being violated?", options: ["SRP", "LSP", "OCP", "DIP"], correctIndex: 2, explanation: "Every new discount type requires modifying the existing switch. OCP says new behavior should be added via new classes (e.g., IDiscountStrategy implementations)." },
+        { category: "OCP", question: "Which design pattern best helps achieve OCP?", options: ["Singleton", "Strategy Pattern", "Facade", "Adapter"], correctIndex: 1, explanation: "Strategy lets you define a family of algorithms behind an interface. Adding a new algorithm means adding a new class, not modifying existing ones." },
+        { category: "OCP", question: "How does polymorphism enable the Open/Closed Principle?", options: ["It doesn't — OCP is about encapsulation.", "New subclasses or interface implementations add behavior without touching the base class or consuming code.", "Polymorphism only works with abstract classes, not interfaces.", "Polymorphism violates OCP by allowing runtime changes."], correctIndex: 1, explanation: "When code depends on an abstraction (interface/base class), you can introduce new implementations without modifying the existing consumer." },
+        { category: "OCP", question: "In ASP.NET Core, how does the middleware pipeline demonstrate OCP?", options: ["You modify the framework source to add middleware.", "You add new middleware classes to the pipeline without modifying existing ones.", "You override the built-in middleware with reflection.", "You fork the ASP.NET Core repository."], correctIndex: 1, explanation: "Each middleware is a separate class. Adding new behavior (e.g., custom logging) means adding a new middleware, not changing existing ones." },
+        { category: "OCP", question: "A PaymentProcessor has if/else blocks for Stripe, PayPal, and Square. How do you refactor for OCP?", options: ["Add more else-if blocks as needed.", "Create an IPaymentProvider interface with Stripe, PayPal, Square implementations and inject the correct one.", "Make PaymentProcessor static.", "Use reflection to dynamically load payment methods."], correctIndex: 1, explanation: "Each payment provider becomes a class implementing IPaymentProvider. Adding a new provider means creating a new class, not touching PaymentProcessor." },
+        { category: "OCP", question: "How do C# extension methods relate to OCP?", options: ["They violate OCP because they extend sealed classes.", "They support OCP by adding behavior to existing types without modifying their source code.", "Extension methods have nothing to do with SOLID.", "They violate SRP by adding methods externally."], correctIndex: 1, explanation: "Extension methods let you add functionality to existing types (even those you don't own) without modifying the original class — a form of OCP." },
+        { category: "OCP", question: "What is the role of abstract classes in achieving OCP?", options: ["Abstract classes prevent any extension.", "They define a stable contract while allowing derived classes to provide new behavior via overrides.", "Abstract classes are only for code reuse, not OCP.", "They force all methods to be virtual."], correctIndex: 1, explanation: "The abstract class is 'closed' (its contract is stable). Derived classes are 'open' (they extend behavior by overriding abstract/virtual methods)." },
+        { category: "OCP", question: "A report generator outputs PDF. Now it needs CSV and Excel. What's the OCP-compliant approach?", options: ["Add CSV and Excel logic to the existing PDF generator class.", "Create an IReportExporter interface with PdfExporter, CsvExporter, ExcelExporter implementations.", "Create a massive utility class with all formats.", "Use conditional compilation (#if) for each format."], correctIndex: 1, explanation: "Each export format is a separate class. The report generator depends on IReportExporter, making it closed for modification but open for new formats." },
+        { category: "OCP", question: "How does Dependency Injection in ASP.NET Core support OCP?", options: ["It doesn't — DI is about lifetime management only.", "DI allows swapping implementations at registration time without changing consuming classes.", "DI makes all services singletons.", "DI requires modifying Program.cs for every new service."], correctIndex: 1, explanation: "While you do register new services in Program.cs, the consuming classes never change — they depend on interfaces, not concrete types." },
+
+        // ===== LISKOV SUBSTITUTION PRINCIPLE (LSP) =====
+        { category: "LSP", question: "What does the Liskov Substitution Principle state?", options: ["Subclasses should always override all base class methods.", "Objects of a superclass should be replaceable with objects of a subclass without breaking the application.", "A subclass should never be used in place of its parent.", "Liskov Substitution only applies to abstract classes."], correctIndex: 1, explanation: "LSP says if code works with a base type, it must also work correctly with any derived type — no surprises, no broken contracts." },
+        { category: "LSP", question: "A Square class inherits from Rectangle and overrides SetWidth to also set Height. Does this violate LSP?", options: ["No — a square IS a rectangle mathematically.", "Yes — code expecting Rectangle behavior (independent width/height) will break when given a Square.", "No — as long as the tests pass.", "Yes — but only in strongly-typed languages."], correctIndex: 1, explanation: "The classic LSP violation. Code calling rect.SetWidth(5); rect.SetHeight(10) expects area=50, but Square produces area=100." },
+        { category: "LSP", question: "A derived class throws NotImplementedException for a base class method. Does this violate LSP?", options: ["No — it's a valid way to signal unsupported operations.", "Yes — callers of the base type expect the method to work, not throw unexpected exceptions.", "No — as long as the exception is documented.", "It depends on the method's return type."], correctIndex: 1, explanation: "If calling code expects the method to succeed (per the base class contract), throwing NotImplementedException is a surprise — a clear LSP violation." },
+        { category: "LSP", question: "What is the 'contract' in the context of LSP?", options: ["The interface keyword in C#.", "The set of preconditions, postconditions, and invariants that callers rely on.", "The class constructor parameters.", "The XML documentation comments."], correctIndex: 1, explanation: "LSP is about behavioral contracts: what a method promises to accept (preconditions), what it promises to return (postconditions), and what always stays true (invariants)." },
+        { category: "LSP", question: "A ReadOnlyCollection inherits from ICollection which has Add(). The Add() method throws NotSupportedException. Is this an LSP violation?", options: ["Yes — always.", "No — because ICollection documents that Add() may throw for read-only collections, so the contract accounts for it.", "Yes — because exceptions are always violations.", "No — because it's a .NET Framework class."], correctIndex: 1, explanation: "LSP allows exceptions if they're part of the documented contract. ICollection.IsReadOnly exists precisely to warn callers." },
+        { category: "LSP", question: "How do you fix an LSP violation where a derived class can't fulfill all base class behaviors?", options: ["Add try-catch blocks in all calling code.", "Redesign the hierarchy — either change the base class or don't inherit from it. Prefer composition over inheritance.", "Ignore it if tests pass.", "Make the base class sealed."], correctIndex: 1, explanation: "If a subclass can't honor the full contract of its parent, the inheritance relationship is wrong. Extract a common interface or use composition." },
+        { category: "LSP", question: "An Ostrich class extends Bird. Bird has a Fly() method. What's the LSP-friendly solution?", options: ["Ostrich.Fly() throws NotImplementedException.", "Split Bird into FlyingBird and NonFlyingBird, and have Ostrich extend NonFlyingBird.", "Make Fly() return null for Ostrich.", "Override Fly() to do nothing (empty method body)."], correctIndex: 1, explanation: "Not all birds fly. The hierarchy should reflect that. FlyingBird gets Fly(), NonFlyingBird doesn't. Ostrich never promises to fly." },
+        { category: "LSP", question: "How does LSP relate to polymorphism?", options: ["LSP prevents polymorphism.", "LSP ensures polymorphism works correctly — substituting a derived type won't surprise the caller.", "LSP and polymorphism are unrelated.", "LSP only applies to interfaces, polymorphism to classes."], correctIndex: 1, explanation: "Polymorphism lets you swap types. LSP is the rule that guarantees those swaps are safe and behavior-preserving." },
+        { category: "LSP", question: "A method returns IEnumerable<T> but a subclass implementation returns null instead of an empty collection. LSP violation?", options: ["No — null is a valid reference.", "Yes — callers expect an iterable result, not null. They will get NullReferenceException on foreach.", "No — the caller should always null-check.", "Only if the method is async."], correctIndex: 1, explanation: "The implicit contract of returning IEnumerable is that you can iterate it. Returning null breaks that expectation — return Enumerable.Empty<T>() instead." },
+        { category: "LSP", question: "What role does 'Design by Contract' play in LSP?", options: ["It's an unrelated formal method.", "It formalizes LSP: subclasses must accept the same or weaker preconditions and guarantee the same or stronger postconditions.", "It replaces LSP in modern C#.", "It only applies to Java."], correctIndex: 1, explanation: "Bertrand Meyer's Design by Contract maps directly to LSP: don't demand more from callers (preconditions), don't deliver less (postconditions)." },
+
+        // ===== INTERFACE SEGREGATION PRINCIPLE (ISP) =====
+        { category: "ISP", question: "What does the Interface Segregation Principle state?", options: ["All interfaces should have exactly one method.", "Clients should not be forced to depend on methods they don't use.", "Interfaces should be implemented by at most one class.", "You should never use interfaces, only abstract classes."], correctIndex: 1, explanation: "ISP says keep interfaces focused. If a client only needs Read(), don't force it to implement Write() and Delete() too." },
+        { category: "ISP", question: "An IRepository<T> interface has GetAll, GetById, Add, Update, Delete. A read-only consumer only needs GetAll and GetById. Which principle is violated?", options: ["SRP", "OCP", "ISP", "DIP"], correctIndex: 2, explanation: "The read-only consumer is forced to depend on Add/Update/Delete it never uses. Split into IReadRepository<T> and IWriteRepository<T>." },
+        { category: "ISP", question: "How does ISP differ from SRP?", options: ["They're the same principle.", "SRP is about class responsibilities. ISP is about interface design — not forcing consumers to depend on unused methods.", "ISP applies to abstract classes, SRP to interfaces.", "SRP is about behavior, ISP is about state."], correctIndex: 1, explanation: "SRP focuses on the implementer (one reason to change). ISP focuses on the consumer (don't force unused dependencies)." },
+        { category: "ISP", question: "A 'fat' IWorker interface has Work(), Eat(), and Sleep(). A Robot class implements IWorker. What's wrong?", options: ["Nothing — robots are workers.", "Robot must implement Eat() and Sleep() which don't apply, violating ISP.", "Robot should throw NotImplementedException for Eat/Sleep.", "IWorker should be abstract instead."], correctIndex: 1, explanation: "Split into IWorkable, IFeedable, ISleepable. Robot implements only IWorkable. Humans implement all three." },
+        { category: "ISP", question: "In ASP.NET Core, why does ILogger<T> exist alongside ILogger?", options: ["ILogger<T> is deprecated.", "ILogger<T> is a focused interface for category-specific logging, following ISP by not exposing irrelevant configuration methods.", "They're identical.", "ILogger<T> is only for unit tests."], correctIndex: 1, explanation: "ILogger<T> scopes the logging category to the type T. Consumers don't need to know about log configuration — that's handled separately." },
+        { category: "ISP", question: "How do you identify ISP violations in a codebase?", options: ["Count the number of interfaces.", "Look for classes that implement interfaces but throw NotImplementedException or leave methods empty.", "Check if interfaces have more than 5 methods.", "Look for classes with too many constructors."], correctIndex: 1, explanation: "Empty implementations or NotImplementedException are red flags — the class doesn't need those methods, meaning the interface is too broad." },
+        { category: "ISP", question: "A printing interface has Print(), Scan(), Fax(), and Staple(). A basic printer only prints. What's the ISP solution?", options: ["The basic printer should implement all methods anyway.", "Split into IPrinter, IScanner, IFax, IStapler. Basic printer implements only IPrinter.", "Make all methods optional with default implementations.", "Use one interface but mark unused methods as [Obsolete]."], correctIndex: 1, explanation: "Each capability becomes its own interface. Devices implement only what they support. A multifunction device implements all four." },
+        { category: "ISP", question: "How do C# default interface methods (C# 8+) relate to ISP?", options: ["They eliminate the need for ISP entirely.", "They can help evolve interfaces without breaking implementers, but don't solve the fundamental ISP issue of forcing unused dependencies.", "Default methods replace abstract classes.", "They violate ISP by definition."], correctIndex: 1, explanation: "Default interface methods help backwards compatibility, but if a client depends on an interface with 20 methods and only uses 2, ISP is still violated." },
+        { category: "ISP", question: "What is the connection between ISP and the Adapter pattern?", options: ["Adapter violates ISP.", "Adapter can bridge ISP-compliant narrow interfaces to legacy fat interfaces, shielding clients from unused methods.", "They're unrelated patterns.", "Adapter makes ISP unnecessary."], correctIndex: 1, explanation: "If you can't change a fat third-party interface, an Adapter can expose only the methods your client needs, preserving ISP." },
+        { category: "ISP", question: "A service depends on IConfiguration to read one setting. Is this an ISP concern?", options: ["No — IConfiguration is a standard .NET interface.", "Yes — the service depends on the entire configuration API when it only needs one value. Use IOptions<T> or inject the value directly.", "No — configuration is a cross-cutting concern.", "Yes — but only if the config file has more than 10 keys."], correctIndex: 1, explanation: "IOptions<T> follows ISP by scoping configuration to a strongly-typed section. The service doesn't see database connection strings when it only needs an API key." },
+
+        // ===== DEPENDENCY INVERSION PRINCIPLE (DIP) =====
+        { category: "DIP", question: "What does the Dependency Inversion Principle state?", options: ["Always use Dependency Injection containers.", "High-level modules should not depend on low-level modules. Both should depend on abstractions.", "Low-level modules should depend on high-level modules.", "Dependencies should be injected via constructors only."], correctIndex: 1, explanation: "DIP inverts the traditional dependency direction. Instead of BusinessLogic depending on SqlDatabase, both depend on IDatabase." },
+        { category: "DIP", question: "What is the difference between Dependency Inversion and Dependency Injection?", options: ["They are the same thing.", "Dependency Inversion is a principle (depend on abstractions). Dependency Injection is a technique (passing dependencies via constructors/parameters).", "Dependency Injection is the principle, Inversion is the technique.", "Dependency Injection only works in ASP.NET Core."], correctIndex: 1, explanation: "DIP is the 'why' (abstractions, not concretions). DI is the 'how' (constructor injection, method injection). You can have DIP without a DI container." },
+        { category: "DIP", question: "A controller directly creates `new SqlUserRepository()` inside its methods. What's the DIP violation?", options: ["Controllers shouldn't access databases.", "The high-level controller directly depends on the low-level SQL implementation instead of an IUserRepository abstraction.", "SqlUserRepository should be static.", "There's no violation if it works correctly."], correctIndex: 1, explanation: "The controller is tightly coupled to SQL Server. If you switch to MongoDB, you must modify the controller. With IUserRepository, you just register a new implementation." },
+        { category: "DIP", question: "In Clean Architecture, which layer 'owns' the interfaces?", options: ["Infrastructure", "Presentation", "The Domain/Application layer — inner layers define interfaces that outer layers implement.", "The database layer."], correctIndex: 2, explanation: "This is DIP in action: the inner (high-level) layer defines what it needs via interfaces. The outer (low-level) Infrastructure layer provides concrete implementations." },
+        { category: "DIP", question: "How does DIP enable unit testing?", options: ["DIP has no effect on testing.", "By depending on abstractions, you can substitute real implementations with mocks/stubs in tests.", "DIP makes integration tests faster.", "DIP allows testing without any test framework."], correctIndex: 1, explanation: "If OrderService depends on IPaymentGateway (not StripePaymentGateway), you can inject a mock that simulates payments without hitting a real API." },
+        { category: "DIP", question: "What is the 'abstraction' in DIP — an interface or an abstract class?", options: ["Only interfaces.", "Only abstract classes.", "Either — DIP says depend on abstractions, which includes both interfaces and abstract classes.", "Neither — it refers to generic type parameters."], correctIndex: 2, explanation: "DIP doesn't prescribe interfaces vs abstract classes. The key is that both high-level and low-level modules depend on the abstraction, not on concretions." },
+        { category: "DIP", question: "A business rule class directly calls `File.WriteAllText()`. How does this violate DIP?", options: ["File operations are always fine in business logic.", "The high-level business logic depends directly on the low-level file system API. It should depend on an IFileWriter abstraction.", "DIP only applies to database access.", "It only violates DIP if the file path is hardcoded."], correctIndex: 1, explanation: "Business logic shouldn't know about file systems. Inject an IFileWriter so you can swap to cloud storage, memory, or a mock without changing the business rule." },
+        { category: "DIP", question: "In ASP.NET Core DI, what does `services.AddScoped<IService, ConcreteService>()` achieve in terms of DIP?", options: ["It violates DIP by referencing ConcreteService.", "It wires DIP: controllers depend on the IService abstraction, and the container provides the concrete implementation at runtime.", "It makes ConcreteService a singleton.", "It has nothing to do with DIP."], correctIndex: 1, explanation: "Registration is the composition root — the one place where you map abstractions to implementations. Consuming classes only see IService." },
+        { category: "DIP", question: "What is the Composition Root pattern and how does it relate to DIP?", options: ["It's where you write your Main() method.", "It's the single location (typically Program.cs/Startup.cs) where all dependency mappings are configured, keeping the rest of the app DIP-compliant.", "It's the root namespace of the project.", "It's the first class the garbage collector processes."], correctIndex: 1, explanation: "The Composition Root is the ONLY place that knows about concrete types. The rest of the application only depends on abstractions." },
+        { category: "DIP", question: "How does the Plugin architecture pattern embody DIP?", options: ["Plugins depend on the host application.", "The host defines interfaces (abstractions) that plugins implement. The host never depends on specific plugin code.", "Plugins bypass DIP for performance.", "Plugin architecture violates DIP because it uses reflection."], correctIndex: 1, explanation: "The host (high-level) defines the contract. Plugins (low-level) implement it. Adding a new plugin doesn't change the host — pure DIP." },
+
+        // ===== CROSS-CUTTING / COMBINED PRINCIPLES =====
+        { category: "SOLID Combined", question: "A class violates OCP because adding features requires modifying it. What other principle is likely also violated?", options: ["Only OCP is violated.", "SRP — if the class needs modification for many reasons, it probably has multiple responsibilities.", "LSP — because subclasses can't replace it.", "ISP — because its interface is too broad."], correctIndex: 1, explanation: "OCP and SRP violations often go hand-in-hand. A class with multiple responsibilities gets modified for multiple reasons, violating both." },
+        { category: "SOLID Combined", question: "How do SOLID principles relate to microservices?", options: ["SOLID doesn't apply to distributed systems.", "Each microservice ideally follows SRP (single domain), OCP (extensible via events), and DIP (depends on contracts/interfaces, not other services' internals).", "SOLID only applies to monoliths.", "Microservices replace the need for SOLID."], correctIndex: 1, explanation: "SOLID scales from classes to services. A microservice should have one bounded context (SRP), communicate via contracts (DIP), and be independently deployable (OCP)." },
+        { category: "SOLID Combined", question: "What is the relationship between SOLID and Clean Code?", options: ["Clean Code replaces SOLID.", "SOLID provides architectural principles that naturally lead to clean, readable, testable, and maintainable code.", "SOLID is about performance, Clean Code is about readability.", "They often conflict with each other."], correctIndex: 1, explanation: "SOLID principles guide structure; Clean Code guides readability. Together, they produce code that's both well-organized and easy to understand." },
+        { category: "SOLID Combined", question: "You inherit a legacy codebase with zero tests. Which SOLID principle should guide your first refactoring step?", options: ["OCP — make everything extensible.", "ISP — split all interfaces.", "DIP — introduce interfaces for external dependencies so you can write tests with mocks.", "LSP — check all inheritance hierarchies."], correctIndex: 2, explanation: "Without DIP, you can't isolate units for testing. Introducing interfaces for database/file/network access is the first step to making legacy code testable." },
+        { category: "SOLID Combined", question: "Which SOLID principle is MOST directly enabled by the Strategy pattern?", options: ["SRP", "OCP", "LSP", "ISP"], correctIndex: 1, explanation: "Strategy lets you add new behaviors (strategies) without modifying the context class — the essence of Open/Closed." },
+        { category: "SOLID Combined", question: "A team argues that SOLID leads to too many small classes. How do you respond?", options: ["They're right — SOLID creates unnecessary complexity.", "Many focused classes are easier to understand, test, and maintain than a few 'God classes'. The trade-off is navigability, which IDE tooling solves.", "Ignore SOLID for small projects.", "Combine all SOLID classes into service classes."], correctIndex: 1, explanation: "More files ≠ more complexity. Each small class has a clear purpose. Modern IDEs make navigation trivial. The alternative — God classes — is far worse." },
+        { category: "SOLID Combined", question: "How does the Decorator pattern help with both OCP and SRP?", options: ["It doesn't — decorators violate SOLID.", "Each decorator adds ONE new behavior (SRP) without modifying the original class (OCP).", "Decorators only help with ISP.", "Decorators only apply to the Singleton pattern."], correctIndex: 1, explanation: "A LoggingDecorator adds logging (SRP) around an existing service without changing it (OCP). A CachingDecorator adds caching the same way." },
+        { category: "SOLID Combined", question: "In event-driven architecture, how does publishing domain events support OCP?", options: ["Events violate OCP.", "New subscribers can react to events without modifying the publisher, extending system behavior through addition, not modification.", "Events only support DIP.", "Events make OCP irrelevant."], correctIndex: 1, explanation: "The publisher is closed for modification. Adding a new subscriber (e.g., sending an email when OrderPlaced fires) is pure extension." },
+        { category: "SOLID Combined", question: "Which principle is violated when a unit test requires 10+ mocks in the constructor?", options: ["Only DIP.", "SRP — the class likely has too many responsibilities, requiring too many dependencies.", "OCP — the class isn't extensible.", "ISP — the test interface is too broad."], correctIndex: 1, explanation: "Too many constructor parameters is a classic SRP smell. The class is doing too much. Split it into smaller, focused classes." },
+        { category: "SOLID Combined", question: "How do SOLID principles apply to functional programming?", options: ["SOLID is only for OOP and is irrelevant to FP.", "The spirit of SOLID translates: SRP = small pure functions, OCP = higher-order functions, DIP = pass functions as parameters (dependency injection of behavior).", "FP automatically satisfies all SOLID principles.", "Only ISP applies to FP."], correctIndex: 1, explanation: "SOLID isn't syntax-specific. Pure functions have single responsibilities. Higher-order functions enable extension. Passing functions inverts dependencies." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedQuestions = [];
+    let currentTotalQuestions = 20;
+
+    const setupCard = document.getElementById('setup-card');
+    const quizArea = document.getElementById('quiz-area');
+    const quizContainer = document.getElementById('quiz-container');
+    const qCounter = document.getElementById('q-counter');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressFill = document.getElementById('progress');
+    const resultsCard = document.getElementById('results-card');
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    window.startQuiz = function(numQuestions) {
+        currentTotalQuestions = numQuestions;
+        selectedQuestions = shuffleArray(allQuestions).slice(0, currentTotalQuestions);
+        currentQuestionIndex = 0;
+        score = 0;
+        setupCard.classList.remove('active');
+        setupCard.style.display = 'none';
+        quizArea.style.display = 'block';
+        resultsCard.classList.remove('active');
+        updateScoreboard();
+        renderQuestion();
+    };
+
+    function updateScoreboard() {
+        qCounter.innerText = `Question ${currentQuestionIndex + 1} of ${currentTotalQuestions}`;
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex) / currentTotalQuestions) * 100}%`;
+    }
+
+    function renderQuestion() {
+        quizContainer.innerHTML = '';
+        const q = selectedQuestions[currentQuestionIndex];
+        const card = document.createElement('div');
+        card.className = 'card active';
+        card.innerHTML = `
+            <div class="category-badge">${q.category}</div>
+            <div class="question-text">${q.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="options">
+                ${q.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${q.correctIndex}, this)">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</button>`).join('')}
+            </div>
+            <div class="explanation" id="expl-${currentQuestionIndex}"><strong>Explanation:</strong> ${q.explanation}</div>
+            <div class="controls"><button class="next-btn" id="next-${currentQuestionIndex}" onclick="nextQuestion()">Continue</button></div>
+        `;
+        quizContainer.appendChild(card);
+        updateScoreboard();
+    }
+
+    window.checkAnswer = function(selectedIndex, correctIndex, btnElement) {
+        const buttons = btnElement.parentElement.querySelectorAll('.option-btn');
+        const nextBtn = document.getElementById(`next-${currentQuestionIndex}`);
+        const explanation = document.getElementById(`expl-${currentQuestionIndex}`);
+        buttons.forEach(b => b.disabled = true);
+        if (selectedIndex === correctIndex) { btnElement.classList.add('correct'); score++; }
+        else { btnElement.classList.add('wrong'); buttons[correctIndex].classList.add('correct'); }
+        explanation.classList.add('show');
+        nextBtn.classList.add('show');
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex + 1) / currentTotalQuestions) * 100}%`;
+    };
+
+    window.nextQuestion = function() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentTotalQuestions) renderQuestion();
+        else showResults();
+    };
+
+    function showResults() {
+        quizArea.style.display = 'none';
+        document.getElementById('final-score-text').innerText = `${score} / ${currentTotalQuestions}`;
+        let percentage = score / currentTotalQuestions;
+        let feedback = percentage >= 0.8 ? "Outstanding! You have a deep understanding of SOLID principles and can apply them confidently in real-world architecture." :
+            percentage >= 0.6 ? "Solid foundation! Review the explanations on ISP and DIP — they're the trickiest in practice." :
+            "Keep studying! Focus on understanding WHY each principle exists and how violations look in real code.";
+        document.getElementById('feedback-text').innerText = feedback;
+        resultsCard.classList.add('active');
+    }
+    </script>
+</body>
+</html>

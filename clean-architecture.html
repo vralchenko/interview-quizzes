@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Architecture — Interview Quiz</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 800px; width: 100%; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin-bottom: 5px; color: #fff; }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+        .progress-bar { width: 100%; height: 8px; background-color: var(--bg-card); border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--accent); width: 0%; transition: width 0.3s ease; }
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+        .card.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .category-badge { display: inline-block; background-color: rgba(59,130,246,0.2); color: #60a5fa; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .question-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn { background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 15px 20px; border-radius: 8px; font-size: 1rem; text-align: left; cursor: pointer; transition: all 0.2s; line-height: 1.4; }
+        .option-btn:hover:not(:disabled) { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .option-btn.correct { background-color: rgba(16,185,129,0.2); border-color: var(--success); }
+        .option-btn.wrong { background-color: rgba(239,68,68,0.2); border-color: var(--danger); opacity: 0.7; }
+        .option-btn:disabled { cursor: default; }
+        .explanation { margin-top: 20px; padding: 15px; background-color: rgba(255,255,255,0.05); border-left: 4px solid var(--accent); border-radius: 4px; font-size: 0.95rem; display: none; }
+        .explanation.show { display: block; animation: fadeIn 0.4s; }
+        .controls { margin-top: 25px; display: flex; justify-content: flex-end; }
+        .next-btn, .restart-btn { background-color: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; display: none; }
+        .next-btn.show, .restart-btn.show { display: block; }
+        .next-btn:hover, .restart-btn:hover { background-color: var(--accent-hover); }
+        .score-display { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted); }
+        #results-card { text-align: center; }
+        .final-score { font-size: 4rem; font-weight: 700; color: var(--accent); margin: 20px 0; }
+        #setup-card { text-align: center; }
+        .batch-controls { display: flex; flex-direction: column; gap: 15px; margin: 30px 0; }
+        .batch-btn { background-color: rgba(255,255,255,0.05); border: 2px solid var(--accent); color: var(--text-main); padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; }
+        .batch-btn:hover { background-color: var(--accent); }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Clean Architecture</h1>
+            <p>Deep-dive quiz on layers, dependency rules, CQRS, DDD, and real-world .NET project structure</p>
+        </div>
+
+        <div class="card active" id="setup-card">
+            <h2>50 Questions on Clean Architecture</h2>
+            <p>Covers Domain Layer, Application Layer, Infrastructure, Presentation, CQRS, MediatR, DDD tactical patterns, and project organization.</p>
+            <div class="batch-controls">
+                <button class="batch-btn" onclick="startQuiz(20)">Random 20-Question Sprint</button>
+                <button class="batch-btn" onclick="startQuiz(50)">Marathon: All 50 Questions</button>
+            </div>
+        </div>
+
+        <div id="quiz-area" style="display: none;">
+            <div class="score-display">
+                <span id="q-counter">Question 1 of X</span>
+                <span id="score-tracker">Score: 0</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+            <div id="quiz-container"></div>
+        </div>
+
+        <div class="card" id="results-card">
+            <h2>Assessment Complete!</h2>
+            <div class="final-score" id="final-score-text">0/X</div>
+            <p id="feedback-text" style="font-size: 1.1rem; margin-bottom: 30px;"></p>
+            <button class="restart-btn show" onclick="location.reload()" style="margin: 0 auto;">Back to Start Menu</button>
+        </div>
+    </div>
+
+    <script>
+    const allQuestions = [
+        // ===== DOMAIN LAYER =====
+        { category: "Domain Layer", question: "In Clean Architecture, what belongs in the Domain layer?", options: ["Controllers and middleware.", "Entities, Value Objects, Domain Events, and business rule exceptions.", "EF Core DbContext and migrations.", "React components and API routes."], correctIndex: 1, explanation: "The Domain layer is the innermost circle. It contains pure business logic with zero dependencies on frameworks, databases, or UI." },
+        { category: "Domain Layer", question: "Why should the Domain layer have zero external dependencies?", options: ["To reduce NuGet package count.", "So business rules remain testable, portable, and immune to infrastructure changes (DB, framework, cloud provider).", "Because .NET doesn't allow references in class libraries.", "Domain layer classes are too small for dependencies."], correctIndex: 1, explanation: "If your domain logic depends on EF Core, changing to Dapper or a different DB requires rewriting business rules. Zero dependencies = maximum portability." },
+        { category: "Domain Layer", question: "What is a Value Object in DDD?", options: ["An object with a primary key in the database.", "An immutable object defined entirely by its attributes, with no identity (e.g., Money, Address, DateRange).", "A DTO used for API responses.", "A singleton service."], correctIndex: 1, explanation: "Two Money objects with amount=100 and currency=USD are equal regardless of their memory reference. They have no Id — only their values matter." },
+        { category: "Domain Layer", question: "What is the difference between an Entity and a Value Object?", options: ["Entities are bigger than Value Objects.", "Entities have a unique identity that persists over time. Value Objects are defined solely by their attributes.", "Value Objects can't be stored in databases.", "Entities are always aggregate roots."], correctIndex: 1, explanation: "A User entity with Id=42 is the same user even if their name changes. A Money(100, USD) value object has no identity — only its values define it." },
+        { category: "Domain Layer", question: "What is an Aggregate Root?", options: ["The root namespace of the Domain project.", "The single entry point entity that guards consistency boundaries for a cluster of related entities and value objects.", "The base class for all entities.", "The database table with the most rows."], correctIndex: 1, explanation: "External code can only modify child entities through the Aggregate Root. E.g., Order is the root; OrderLines can only be added/removed via Order methods." },
+        { category: "Domain Layer", question: "Why should Domain Entities encapsulate their invariants?", options: ["For better JSON serialization.", "To ensure business rules are enforced in one place, preventing invalid state regardless of how the entity is used.", "Because EF Core requires it.", "To reduce the number of unit tests."], correctIndex: 1, explanation: "If Order.AddItem() validates stock and calculates totals, no controller or service can bypass those rules. The entity protects its own consistency." },
+        { category: "Domain Layer", question: "What are Domain Events?", options: ["JavaScript browser events.", "Notifications that something meaningful happened in the domain (e.g., OrderPlaced, PaymentReceived) that other parts of the system can react to.", "EF Core change tracking events.", "Azure Event Grid messages."], correctIndex: 1, explanation: "Domain Events decouple the domain from side effects. When OrderPlaced fires, handlers can send emails, update inventory, etc. — without the Order knowing." },
+        { category: "Domain Layer", question: "Should the Domain layer reference MediatR?", options: ["Yes — MediatR is essential for domain events.", "Ideally no. The Domain defines event interfaces/marker types. MediatR is an infrastructure concern wired in the Application or Infrastructure layer.", "MediatR must be in every layer.", "Only if using CQRS."], correctIndex: 1, explanation: "The Domain can define INotification markers. The actual dispatching via MediatR is wired outside the Domain to keep it framework-free." },
+        { category: "Domain Layer", question: "What is a Domain Service?", options: ["An ASP.NET Core background service.", "A stateless service containing business logic that doesn't naturally belong to a single Entity or Value Object.", "A REST API service.", "A database migration service."], correctIndex: 1, explanation: "E.g., TransferMoneyService that coordinates between two Account entities. The logic spans multiple aggregates and doesn't belong in either one." },
+        { category: "Domain Layer", question: "How should domain validation errors be communicated?", options: ["Return HTTP 400 from the entity.", "Throw specific domain exceptions (e.g., InsufficientFundsException) or use a Result<T> pattern — never HTTP concepts.", "Log them and continue silently.", "Write them to the database error table."], correctIndex: 1, explanation: "The Domain doesn't know about HTTP. It communicates failures through exceptions or Result types that the Application layer translates to HTTP responses." },
+
+        // ===== APPLICATION LAYER =====
+        { category: "Application Layer", question: "What is the role of the Application layer in Clean Architecture?", options: ["To render HTML views.", "To orchestrate use cases — coordinate Domain entities, call repositories, and define application-specific business rules.", "To configure the database connection string.", "To define CSS styles for the frontend."], correctIndex: 1, explanation: "The Application layer contains use case handlers (Commands/Queries). It orchestrates but delegates business logic to Domain entities." },
+        { category: "Application Layer", question: "What belongs in the Application layer?", options: ["EF Core DbContext.", "Use case handlers, DTOs, validation rules, interface definitions for repositories and external services.", "Controllers and Razor views.", "Docker configuration files."], correctIndex: 1, explanation: "The Application layer defines WHAT the system does (use cases) and WHAT it needs (interfaces), not HOW things are implemented." },
+        { category: "Application Layer", question: "Why does the Application layer define repository interfaces but not implement them?", options: ["Because it's lazy.", "Dependency Inversion: the Application layer declares what it needs (IOrderRepository). Infrastructure provides the implementation (EfOrderRepository).", "Interfaces are only for testing.", "Because EF Core doesn't support interfaces."], correctIndex: 1, explanation: "This is DIP in action. The Application layer depends on abstractions it owns. Infrastructure depends on the Application layer, not the other way around." },
+        { category: "Application Layer", question: "What is a Command in CQRS?", options: ["A SQL INSERT statement.", "An object representing an intent to change state (e.g., CreateOrderCommand), handled by a CommandHandler.", "A CLI terminal command.", "A GET request to the API."], correctIndex: 1, explanation: "Commands are imperative: 'Create this order.' They return void or a simple result. They modify state and trigger side effects." },
+        { category: "Application Layer", question: "What is a Query in CQRS?", options: ["A SQL SELECT statement.", "An object representing a request for data (e.g., GetOrderByIdQuery), handled by a QueryHandler. It never modifies state.", "An HTTP POST request.", "A domain event."], correctIndex: 1, explanation: "Queries are read-only. GetOrderByIdQuery returns OrderDto. The handler must not have side effects — no writes, no emails, no state changes." },
+        { category: "Application Layer", question: "Should Commands return data?", options: ["Always return the full entity.", "Ideally minimal — return the created entity's ID or a success/failure Result, not the full object.", "Never — commands must return void.", "Return the entire database state."], correctIndex: 1, explanation: "Returning just the Id lets the client fetch the full object via a Query if needed. This keeps the write path simple and the read path optimized." },
+        { category: "Application Layer", question: "What role does MediatR play in the Application layer?", options: ["It replaces Entity Framework.", "It dispatches Commands and Queries to their handlers, decoupling the sender (Controller) from the handler (Use Case).", "It's only used for logging.", "It manages database transactions."], correctIndex: 1, explanation: "The Controller sends a CreateOrderCommand via MediatR. MediatR finds and invokes the correct handler. The Controller doesn't know which class handles it." },
+        { category: "Application Layer", question: "What is a Pipeline Behavior in MediatR?", options: ["A CSS animation.", "Cross-cutting middleware that wraps every Command/Query — used for validation, logging, transactions, and caching.", "A Git branching strategy.", "A CI/CD deployment stage."], correctIndex: 1, explanation: "E.g., a ValidationBehavior runs FluentValidation before every handler. A TransactionBehavior wraps handlers in a DB transaction. AOP without magic." },
+        { category: "Application Layer", question: "How should the Application layer handle mapping between Domain entities and DTOs?", options: ["Entities should directly serialize to JSON.", "Use a mapping layer (AutoMapper, Mapster, or manual mapping) within the Application layer to translate between Domain models and DTOs.", "The database should return DTOs directly.", "The frontend should map entities itself."], correctIndex: 1, explanation: "Domain entities shouldn't be exposed to the outside world. The Application layer maps them to DTOs that hide internal structure and prevent over-posting." },
+        { category: "Application Layer", question: "Should the Application layer know about HTTP, controllers, or authentication?", options: ["Yes — it needs to check user roles.", "No — it receives plain Commands/Queries with user context passed as parameters. HTTP is a Presentation concern.", "Only for authentication.", "Only for authorization."], correctIndex: 1, explanation: "The Application layer is transport-agnostic. The same CreateOrderHandler works whether called from an API controller, a message queue consumer, or a CLI tool." },
+
+        // ===== INFRASTRUCTURE LAYER =====
+        { category: "Infrastructure", question: "What belongs in the Infrastructure layer?", options: ["Business rules and domain entities.", "Concrete implementations: EF Core DbContext, repository implementations, email services, file storage, external API clients.", "Controllers and Razor views.", "Unit test projects."], correctIndex: 1, explanation: "Infrastructure provides the HOW: how data is stored (EF Core), how emails are sent (SMTP), how files are stored (Azure Blob). It implements Application layer interfaces." },
+        { category: "Infrastructure", question: "In Clean Architecture, which direction do dependencies point for Infrastructure?", options: ["Infrastructure depends on nothing.", "Infrastructure depends inward — it references Application and Domain layers, never the other way around.", "Domain depends on Infrastructure.", "All layers depend on Infrastructure."], correctIndex: 1, explanation: "The Dependency Rule: outer layers depend on inner layers. Infrastructure (outer) implements interfaces defined in Application (inner)." },
+        { category: "Infrastructure", question: "Where should EF Core entity configurations (Fluent API) live?", options: ["In the Domain layer next to entities.", "In the Infrastructure layer — they're persistence concerns, not business rules.", "In the Application layer.", "In the Presentation layer's Program.cs."], correctIndex: 1, explanation: "How an entity maps to a database table (column names, indexes, relationships) is an infrastructure detail. The Domain entity shouldn't know about persistence." },
+        { category: "Infrastructure", question: "How do you handle database migrations in Clean Architecture?", options: ["Run them from the Domain project.", "Migrations are an Infrastructure concern. They live in the Infrastructure project and are applied during CI/CD, not at app startup.", "The Application layer generates migrations.", "Controllers trigger migrations on each request."], correctIndex: 1, explanation: "Migrations = persistence detail = Infrastructure. Running them at startup risks race conditions in multi-pod deployments. Apply them in the deployment pipeline." },
+        { category: "Infrastructure", question: "Should Infrastructure layer services have business logic?", options: ["Yes — they're the most concrete layer.", "No — Infrastructure implements technical concerns only. Business logic stays in Domain and Application layers.", "Only validation logic.", "Only error handling logic."], correctIndex: 1, explanation: "A SendGridEmailService should know how to send emails via SendGrid API, not whether a user deserves a welcome email. That decision belongs in the Application/Domain." },
+        { category: "Infrastructure", question: "How do you test Infrastructure layer code?", options: ["You don't — it's untestable.", "Integration tests with real or in-memory databases, TestContainers, or WireMock for external APIs.", "Only unit tests with mocks.", "Manual testing in production."], correctIndex: 1, explanation: "Infrastructure code talks to real systems. Integration tests with TestContainers (real Postgres in Docker) or WebApplicationFactory are the right approach." },
+        { category: "Infrastructure", question: "What is the Repository pattern's role in Infrastructure?", options: ["Repositories define business rules.", "Repositories encapsulate data access logic, providing a collection-like interface to the Application layer while hiding persistence details.", "Repositories replace the need for a database.", "Repositories are only for testing."], correctIndex: 1, explanation: "IOrderRepository.GetByIdAsync(id) is defined in Application. EfOrderRepository in Infrastructure implements it using DbContext, hiding EF Core from use cases." },
+        { category: "Infrastructure", question: "How should external API integrations be structured in Clean Architecture?", options: ["Call external APIs directly from controllers.", "Define an interface in Application (e.g., IPaymentGateway), implement it in Infrastructure (e.g., StripePaymentGateway).", "Put all API calls in the Domain layer.", "Use a single HttpClient for all APIs."], correctIndex: 1, explanation: "The Application layer defines what it needs (IPaymentGateway.ChargeAsync). Infrastructure handles the HTTP details of calling Stripe. Swapping to PayPal = new implementation." },
+        { category: "Infrastructure", question: "Where does caching implementation belong?", options: ["Domain layer.", "Infrastructure layer — caching is a technical optimization. The Application layer may define an ICacheService interface.", "Presentation layer.", "In the database stored procedures."], correctIndex: 1, explanation: "Redis/MemoryCache usage is an infrastructure detail. The Application layer might use ICacheService without knowing if it's Redis, Memcached, or in-memory." },
+        { category: "Infrastructure", question: "How do you register Infrastructure services in ASP.NET Core DI?", options: ["Directly in each controller.", "Create an AddInfrastructure() extension method in the Infrastructure project, called from Program.cs.", "The Domain layer registers them.", "Services auto-register via reflection."], correctIndex: 1, explanation: "Infrastructure exposes a clean extension method (services.AddInfrastructure(config)) that wires up DbContext, repositories, and external services." },
+
+        // ===== PRESENTATION LAYER =====
+        { category: "Presentation", question: "What is the Presentation layer's role in Clean Architecture?", options: ["It contains the core business logic.", "It handles HTTP concerns: controllers, request/response mapping, authentication middleware, and API documentation.", "It manages database connections.", "It defines domain entities."], correctIndex: 1, explanation: "The Presentation layer adapts the Application layer to a specific delivery mechanism (REST API, GraphQL, gRPC, CLI). It's the outermost circle." },
+        { category: "Presentation", question: "Should controllers contain business logic?", options: ["Yes — controllers are the brain of the application.", "No — controllers should be thin. They receive requests, dispatch Commands/Queries, and return responses.", "Only validation logic.", "Only error handling."], correctIndex: 1, explanation: "A thin controller: parse request -> send Command/Query via MediatR -> map result to HTTP response. That's it. All logic lives in handlers." },
+        { category: "Presentation", question: "How should API controllers handle validation errors from the Application layer?", options: ["Catch all exceptions and return 500.", "Map domain/application exceptions to appropriate HTTP status codes (400 for validation, 404 for not found, 409 for conflicts).", "Let exceptions bubble up unhandled.", "Return 200 with an error message in the body."], correctIndex: 1, explanation: "A global exception handler middleware or ProblemDetails maps ValidationException -> 400, NotFoundException -> 404, etc." },
+        { category: "Presentation", question: "What is the benefit of using Minimal APIs vs Controllers in Clean Architecture?", options: ["Minimal APIs are always better.", "Both work. With CQRS/MediatR, endpoints are already thin, so Minimal APIs reduce boilerplate while Controllers provide more structure.", "Controllers are deprecated in .NET 8.", "Minimal APIs can't use dependency injection."], correctIndex: 1, explanation: "When handlers contain all logic, endpoints just dispatch. Minimal APIs shine here: app.MapPost('/orders', (cmd, mediator) => mediator.Send(cmd))." },
+        { category: "Presentation", question: "Should the Presentation layer reference the Domain layer directly?", options: ["Yes — it needs to return domain entities as JSON.", "Minimally. It should primarily work with Application layer DTOs. Direct domain entity exposure leaks internal structure.", "Never under any circumstances.", "Only for reading, never for writing."], correctIndex: 1, explanation: "The Presentation layer sends Commands/Queries to the Application layer and receives DTOs back. Exposing Domain entities couples the API contract to internal models." },
+
+        // ===== CQRS & PATTERNS =====
+        { category: "CQRS", question: "What is the main benefit of separating Commands and Queries?", options: ["It doubles the number of classes.", "Read and write models can be independently optimized, scaled, and maintained.", "It's required by Entity Framework.", "Queries are faster than commands."], correctIndex: 1, explanation: "Reads might use Dapper with denormalized views for speed. Writes might use rich domain models with validation. Separate concerns = independent optimization." },
+        { category: "CQRS", question: "Do you always need separate read and write databases for CQRS?", options: ["Yes — CQRS requires two databases.", "No — CQRS is about separating the code paths. You can use one database with different query strategies for reads vs writes.", "Only with Event Sourcing.", "Only in microservices."], correctIndex: 1, explanation: "CQRS at its simplest means different classes for reading and writing. Separate databases are an optional optimization for extreme scale." },
+        { category: "CQRS", question: "How does CQRS relate to Event Sourcing?", options: ["They're the same thing.", "They're complementary but independent. CQRS separates reads/writes. Event Sourcing stores state as events. They often pair well together.", "Event Sourcing replaces CQRS.", "CQRS requires Event Sourcing."], correctIndex: 1, explanation: "Event Sourcing makes the write model append-only events. CQRS provides a separate read model (projection) built from those events for fast querying." },
+        { category: "CQRS", question: "What is eventual consistency in the context of CQRS with separate databases?", options: ["Data is always consistent.", "After a write, the read model may be briefly out of date until the projection is updated, which is acceptable in many scenarios.", "The system is never consistent.", "Eventual consistency means data loss."], correctIndex: 1, explanation: "When a command updates the write DB, an event updates the read DB asynchronously. There's a small window where reads show stale data — often milliseconds." },
+        { category: "DDD", question: "What is a Bounded Context?", options: ["A database schema boundary.", "A logical boundary where a particular domain model applies. Different contexts may have different meanings for the same term.", "A C# namespace.", "A Docker container boundary."], correctIndex: 1, explanation: "'Customer' in Sales context has orders and payment info. 'Customer' in Shipping context has addresses and delivery preferences. Same word, different models." },
+        { category: "DDD", question: "How do Bounded Contexts communicate in Clean Architecture?", options: ["Direct database sharing.", "Through well-defined contracts: domain events, message queues, or anti-corruption layers that translate between contexts.", "Shared entity classes.", "By referencing each other's DbContexts."], correctIndex: 1, explanation: "An Anti-Corruption Layer translates between contexts. OrderPlaced event in Sales context becomes IncomingShipmentRequest in Shipping context." },
+        { category: "DDD", question: "What is an Anti-Corruption Layer?", options: ["A firewall configuration.", "A translation layer that prevents one bounded context's model from leaking into another, preserving each context's purity.", "A middleware that blocks SQL injection.", "An ORM mapping layer."], correctIndex: 1, explanation: "When integrating with a legacy system, the ACL translates legacy data models into your clean domain models, preventing corruption of your domain." },
+
+        // ===== PROJECT STRUCTURE & TESTING =====
+        { category: "Project Structure", question: "What is the typical .NET solution structure for Clean Architecture?", options: ["One big project with folders.", "Separate projects: Domain, Application, Infrastructure, Presentation (API), plus test projects.", "Just Controllers and Models folders.", "Microservices in separate repositories."], correctIndex: 1, explanation: "Separate projects enforce dependency rules at compile time. Domain.csproj has no project references. Application references only Domain. Infrastructure references Application." },
+        { category: "Project Structure", question: "Why use separate .csproj files for each layer?", options: ["To increase build time.", "The compiler enforces dependency rules: if Domain.csproj doesn't reference Infrastructure.csproj, no developer can accidentally violate the dependency rule.", "It's a Microsoft requirement.", "For NuGet package management only."], correctIndex: 1, explanation: "Project references are one-directional. This turns architectural rules into compiler errors — the strongest form of enforcement." },
+        { category: "Testing", question: "How do you unit test the Application layer?", options: ["You don't — only test controllers.", "Mock the repository interfaces and external service interfaces, then test CommandHandlers and QueryHandlers in isolation.", "Use Selenium browser tests.", "Only integration tests are valid."], correctIndex: 1, explanation: "Because the Application layer depends on interfaces (DIP), you mock them. Test: given this command and these mocked dependencies, verify the expected behavior." },
+        { category: "Testing", question: "How do you test Domain layer entities?", options: ["With integration tests against the database.", "Pure unit tests with no mocks needed — domain entities have no external dependencies.", "With Postman API tests.", "Domain entities don't need testing."], correctIndex: 1, explanation: "Domain entities are pure C# with zero dependencies. Test them directly: new Order() -> order.AddItem(item) -> Assert.Equal(expectedTotal, order.Total)." },
+        { category: "Testing", question: "What is the Testing Pyramid in Clean Architecture?", options: ["A pyramid-shaped test file.", "Many fast unit tests (Domain + Application), fewer integration tests (Infrastructure), and very few end-to-end tests (full API).", "Equal numbers of all test types.", "Only integration tests matter."], correctIndex: 1, explanation: "Unit tests are fast and catch logic errors. Integration tests verify infrastructure works. E2E tests verify the full flow. More units, fewer E2E." },
+
+        // ===== ADVANCED TOPICS =====
+        { category: "Advanced", question: "What is the Specification pattern and how does it relate to Clean Architecture?", options: ["It's a documentation standard.", "A pattern where business query rules are encapsulated in the Domain layer as reusable Specification objects, keeping query logic out of repositories.", "It's another name for the Repository pattern.", "It defines API specifications like OpenAPI."], correctIndex: 1, explanation: "Instead of repository.GetActiveOrdersForCustomer(id), you pass a specification: repository.List(new ActiveOrdersForCustomerSpec(id)). The rule lives in the Domain." },
+        { category: "Advanced", question: "How does Clean Architecture handle cross-cutting concerns like logging?", options: ["Add logging to every method manually.", "Use decorators, middleware, or MediatR pipeline behaviors to add logging transparently without polluting business logic.", "Logging violates Clean Architecture.", "Only log in the Infrastructure layer."], correctIndex: 1, explanation: "A LoggingBehavior<TRequest, TResponse> in MediatR logs every command/query automatically. Business code never calls ILogger directly." },
+        { category: "Advanced", question: "What is the Outbox pattern?", options: ["A pattern for email delivery.", "A pattern ensuring domain events and database changes are atomically consistent — events are stored in an outbox table within the same transaction.", "A UI component pattern.", "A Git branching strategy."], correctIndex: 1, explanation: "Without Outbox: save order + publish event. If publish fails, the order exists but no event fires. With Outbox: both are in one DB transaction; a background job dispatches events." },
+        { category: "Advanced", question: "Should you use Clean Architecture for every project?", options: ["Yes — always.", "No — it's best for complex domains with significant business logic. Simple CRUD apps may be over-engineered by it.", "Only for microservices.", "Only for projects with more than 10 developers."], correctIndex: 1, explanation: "Clean Architecture adds layers and complexity. A simple API with CRUD operations doesn't need 4 projects. Match the architecture to the problem's complexity." },
+        { category: "Advanced", question: "How do you handle file uploads in Clean Architecture?", options: ["Save files directly in the controller.", "Controller receives the file -> passes a Stream/byte[] in a Command -> Application handler calls IFileStorage -> Infrastructure implements with Azure Blob/S3.", "Store files in the Domain entity.", "Base64 encode files in the database."], correctIndex: 1, explanation: "The Application layer defines IFileStorage. Infrastructure implements it. The Domain only stores a file reference (URL/path), not the file itself." },
+        { category: "Advanced", question: "What is the difference between Clean Architecture and Hexagonal (Ports & Adapters)?", options: ["They're completely different architectures.", "They share the same core idea (dependency inversion, domain at center) but differ in terminology: Ports = interfaces, Adapters = implementations.", "Hexagonal is outdated.", "Clean Architecture doesn't use interfaces."], correctIndex: 1, explanation: "Clean Architecture (Uncle Bob) and Hexagonal (Alistair Cockburn) are conceptual siblings. Ports = Application interfaces. Adapters = Infrastructure implementations." },
+        { category: "Advanced", question: "How does Clean Architecture handle background jobs?", options: ["Background jobs run in the Domain layer.", "Background jobs are Infrastructure concerns. They call Application layer handlers (Commands/Queries) like any other entry point.", "Background jobs violate Clean Architecture.", "They run directly against the database."], correctIndex: 1, explanation: "Hangfire/Quartz lives in Infrastructure. A scheduled job dispatches ProcessExpiredOrdersCommand via MediatR — same flow as an API controller." },
+        { category: "Advanced", question: "What is the role of a SharedKernel in DDD/Clean Architecture?", options: ["A shared database.", "A small, carefully managed library containing common Value Objects, base classes, and interfaces shared across multiple Bounded Contexts.", "The .NET runtime.", "A shared Docker volume."], correctIndex: 1, explanation: "SharedKernel contains things like AuditableEntity, Result<T>, and common Value Objects (Money, Email). It must be kept minimal and stable." },
+        { category: "Advanced", question: "How do you implement multi-tenancy in Clean Architecture?", options: ["Hardcode tenant IDs everywhere.", "Define an ITenantProvider in the Application layer. Infrastructure implements it (from JWT claims, headers, or subdomain). Repositories filter by tenant transparently.", "Multi-tenancy violates Clean Architecture.", "Each tenant gets a separate deployed application."], correctIndex: 1, explanation: "The Domain/Application layers don't know about tenant resolution. Infrastructure provides the current tenant ID, and EF Core global query filters handle data isolation." },
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedQuestions = [];
+    let currentTotalQuestions = 20;
+
+    const setupCard = document.getElementById('setup-card');
+    const quizArea = document.getElementById('quiz-area');
+    const quizContainer = document.getElementById('quiz-container');
+    const qCounter = document.getElementById('q-counter');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressFill = document.getElementById('progress');
+    const resultsCard = document.getElementById('results-card');
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    window.startQuiz = function(numQuestions) {
+        currentTotalQuestions = numQuestions;
+        selectedQuestions = shuffleArray(allQuestions).slice(0, currentTotalQuestions);
+        currentQuestionIndex = 0;
+        score = 0;
+        setupCard.classList.remove('active');
+        setupCard.style.display = 'none';
+        quizArea.style.display = 'block';
+        resultsCard.classList.remove('active');
+        updateScoreboard();
+        renderQuestion();
+    };
+
+    function updateScoreboard() {
+        qCounter.innerText = `Question ${currentQuestionIndex + 1} of ${currentTotalQuestions}`;
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex) / currentTotalQuestions) * 100}%`;
+    }
+
+    function renderQuestion() {
+        quizContainer.innerHTML = '';
+        const q = selectedQuestions[currentQuestionIndex];
+        const card = document.createElement('div');
+        card.className = 'card active';
+        card.innerHTML = `
+            <div class="category-badge">${q.category}</div>
+            <div class="question-text">${q.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="options">
+                ${q.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${q.correctIndex}, this)">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</button>`).join('')}
+            </div>
+            <div class="explanation" id="expl-${currentQuestionIndex}"><strong>Explanation:</strong> ${q.explanation}</div>
+            <div class="controls"><button class="next-btn" id="next-${currentQuestionIndex}" onclick="nextQuestion()">Continue</button></div>
+        `;
+        quizContainer.appendChild(card);
+        updateScoreboard();
+    }
+
+    window.checkAnswer = function(selectedIndex, correctIndex, btnElement) {
+        const buttons = btnElement.parentElement.querySelectorAll('.option-btn');
+        const nextBtn = document.getElementById(`next-${currentQuestionIndex}`);
+        const explanation = document.getElementById(`expl-${currentQuestionIndex}`);
+        buttons.forEach(b => b.disabled = true);
+        if (selectedIndex === correctIndex) { btnElement.classList.add('correct'); score++; }
+        else { btnElement.classList.add('wrong'); buttons[correctIndex].classList.add('correct'); }
+        explanation.classList.add('show');
+        nextBtn.classList.add('show');
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex + 1) / currentTotalQuestions) * 100}%`;
+    };
+
+    window.nextQuestion = function() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentTotalQuestions) renderQuestion();
+        else showResults();
+    };
+
+    function showResults() {
+        quizArea.style.display = 'none';
+        document.getElementById('final-score-text').innerText = `${score} / ${currentTotalQuestions}`;
+        let percentage = score / currentTotalQuestions;
+        let feedback = percentage >= 0.8 ? "Outstanding! You deeply understand Clean Architecture layering, dependency rules, and DDD patterns." :
+            percentage >= 0.6 ? "Good foundation! Revisit the Dependency Rule, CQRS separation, and how Infrastructure implements Application interfaces." :
+            "Keep studying! Focus on the Dependency Rule and why each layer exists. Read 'Clean Architecture' by Robert C. Martin.";
+        document.getElementById('feedback-text').innerText = feedback;
+        resultsCard.classList.add('active');
+    }
+    </script>
+</body>
+</html>

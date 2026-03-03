@@ -208,13 +208,17 @@
     function renderQuestion() {
         quizContainer.innerHTML = '';
         const q = selectedQuestions[currentQuestionIndex];
+        const indices = q.options.map((_, i) => i);
+        for (let i = indices.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [indices[i], indices[j]] = [indices[j], indices[i]]; }
+        const shuffledOptions = indices.map(i => q.options[i]);
+        const newCorrectIndex = indices.indexOf(q.correctIndex);
         const card = document.createElement('div');
         card.className = 'card active';
         card.innerHTML = `
             <div class="category-badge">${q.category}</div>
             <div class="question-text">${q.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
             <div class="options">
-                ${q.options.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${q.correctIndex}, this)">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</button>`).join('')}
+                ${shuffledOptions.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${newCorrectIndex}, this)">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</button>`).join('')}
             </div>
             <div class="explanation" id="expl-${currentQuestionIndex}"><strong>Explanation:</strong> ${q.explanation}</div>
             <div class="controls"><button class="next-btn" id="next-${currentQuestionIndex}" onclick="nextQuestion()">Continue</button></div>

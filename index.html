@@ -27,9 +27,30 @@
             max-width: 860px;
             width: 100%;
         }
-        h1 {
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
         }
+        h1 { margin: 0; }
+        .lang-selector {
+            display: flex;
+            gap: 4px;
+        }
+        .lang-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .lang-btn:hover { color: var(--text-main); border-color: var(--accent); }
+        .lang-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
         .subtitle {
             color: var(--text-muted);
             margin-bottom: 40px;
@@ -40,9 +61,8 @@
             gap: 16px;
         }
         @media (max-width: 600px) {
-            .quiz-grid {
-                grid-template-columns: 1fr;
-            }
+            .quiz-grid { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
         }
         .quiz-link {
             display: flex;
@@ -72,42 +92,144 @@
 </head>
 <body>
     <div class="container">
-        <h1>Interview Quizzes</h1>
-        <p class="subtitle">Technical interview preparation — self-assessment quizzes</p>
-        <div class="quiz-grid">
-            <a class="quiz-link" href="fireart-senior-dotnet.html">
-                <div class="quiz-title">Senior .NET Backend</div>
-                <div class="quiz-meta">50 questions · .NET Internals, Architecture, Postgres, Docker, CI/CD</div>
-            </a>
-            <a class="quiz-link" href="solid-principles.html">
-                <div class="quiz-title">SOLID Principles</div>
-                <div class="quiz-meta">50 questions · SRP, OCP, LSP, ISP, DIP with C#/.NET scenarios</div>
-            </a>
-            <a class="quiz-link" href="clean-architecture.html">
-                <div class="quiz-title">Clean Architecture</div>
-                <div class="quiz-meta">50 questions · Domain, Application, Infrastructure, CQRS, DDD, MediatR</div>
-            </a>
-            <a class="quiz-link" href="design-patterns.html">
-                <div class="quiz-title">Design Patterns</div>
-                <div class="quiz-meta">50 questions · GoF Creational, Structural, Behavioral + modern .NET</div>
-            </a>
-            <a class="quiz-link" href="sql-databases.html">
-                <div class="quiz-title">SQL & Databases</div>
-                <div class="quiz-meta">50 questions · Indexes, query optimization, ACID, PostgreSQL, EF Core</div>
-            </a>
-            <a class="quiz-link" href="javascript-typescript-node.html">
-                <div class="quiz-title">JavaScript, TypeScript & Node.js</div>
-                <div class="quiz-meta">50 questions · Closures, event loop, generics, async, Express, streams</div>
-            </a>
-            <a class="quiz-link" href="react.html">
-                <div class="quiz-title">React</div>
-                <div class="quiz-meta">50 questions · Hooks, rendering, state management, Next.js, patterns</div>
-            </a>
-            <a class="quiz-link" href="behavioral-agile.html">
-                <div class="quiz-title">Behavioral & Agile</div>
-                <div class="quiz-meta">50 questions · Scrum, Kanban, STAR method, metrics, conflict resolution</div>
-            </a>
+        <div class="top-bar">
+            <h1 id="page-title">Interview Quizzes</h1>
+            <div class="lang-selector">
+                <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" data-lang="de" onclick="setLang('de')">DE</button>
+                <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+                <button class="lang-btn" data-lang="uk" onclick="setLang('uk')">UK</button>
+            </div>
         </div>
+        <p class="subtitle" id="page-subtitle">Technical interview preparation — self-assessment quizzes</p>
+        <div class="quiz-grid" id="quiz-grid"></div>
     </div>
+
+    <script>
+    const ui = {
+        en: {
+            title: "Interview Quizzes",
+            subtitle: "Technical interview preparation — self-assessment quizzes",
+        },
+        de: {
+            title: "Interview-Quizze",
+            subtitle: "Technische Interviewvorbereitung — Selbstbewertungsquizze",
+        },
+        ru: {
+            title: "Квизы для собеседований",
+            subtitle: "Подготовка к техническим собеседованиям — тесты для самопроверки",
+        },
+        uk: {
+            title: "Квізи для співбесід",
+            subtitle: "Підготовка до технічних співбесід — тести для самоперевірки",
+        }
+    };
+
+    const quizzes = [
+        {
+            href: "fireart-senior-dotnet.html",
+            title: { en: "Senior .NET Backend", de: "Senior .NET Backend", ru: "Senior .NET Backend", uk: "Senior .NET Backend" },
+            meta: {
+                en: "50 questions · .NET Internals, Architecture, Postgres, Docker, CI/CD",
+                de: "50 Fragen · .NET Internals, Architektur, Postgres, Docker, CI/CD",
+                ru: "50 вопросов · .NET Internals, архитектура, Postgres, Docker, CI/CD",
+                uk: "50 питань · .NET Internals, архітектура, Postgres, Docker, CI/CD"
+            }
+        },
+        {
+            href: "solid-principles.html",
+            title: { en: "SOLID Principles", de: "SOLID-Prinzipien", ru: "Принципы SOLID", uk: "Принципи SOLID" },
+            meta: {
+                en: "50 questions · SRP, OCP, LSP, ISP, DIP with C#/.NET scenarios",
+                de: "50 Fragen · SRP, OCP, LSP, ISP, DIP mit C#/.NET-Szenarien",
+                ru: "50 вопросов · SRP, OCP, LSP, ISP, DIP на примерах C#/.NET",
+                uk: "50 питань · SRP, OCP, LSP, ISP, DIP на прикладах C#/.NET"
+            }
+        },
+        {
+            href: "clean-architecture.html",
+            title: { en: "Clean Architecture", de: "Clean Architecture", ru: "Clean Architecture", uk: "Clean Architecture" },
+            meta: {
+                en: "50 questions · Domain, Application, Infrastructure, CQRS, DDD, MediatR",
+                de: "50 Fragen · Domain, Application, Infrastructure, CQRS, DDD, MediatR",
+                ru: "50 вопросов · Domain, Application, Infrastructure, CQRS, DDD, MediatR",
+                uk: "50 питань · Domain, Application, Infrastructure, CQRS, DDD, MediatR"
+            }
+        },
+        {
+            href: "design-patterns.html",
+            title: { en: "Design Patterns", de: "Design Patterns", ru: "Паттерны проектирования", uk: "Патерни проєктування" },
+            meta: {
+                en: "50 questions · GoF Creational, Structural, Behavioral + modern .NET",
+                de: "50 Fragen · GoF Creational, Structural, Behavioral + modernes .NET",
+                ru: "50 вопросов · GoF порождающие, структурные, поведенческие + современный .NET",
+                uk: "50 питань · GoF породжувальні, структурні, поведінкові + сучасний .NET"
+            }
+        },
+        {
+            href: "sql-databases.html",
+            title: { en: "SQL & Databases", de: "SQL & Datenbanken", ru: "SQL и базы данных", uk: "SQL та бази даних" },
+            meta: {
+                en: "50 questions · Indexes, query optimization, ACID, PostgreSQL, EF Core",
+                de: "50 Fragen · Indizes, Abfrageoptimierung, ACID, PostgreSQL, EF Core",
+                ru: "50 вопросов · Индексы, оптимизация запросов, ACID, PostgreSQL, EF Core",
+                uk: "50 питань · Індекси, оптимізація запитів, ACID, PostgreSQL, EF Core"
+            }
+        },
+        {
+            href: "javascript-typescript-node.html",
+            title: { en: "JavaScript, TypeScript & Node.js", de: "JavaScript, TypeScript & Node.js", ru: "JavaScript, TypeScript и Node.js", uk: "JavaScript, TypeScript та Node.js" },
+            meta: {
+                en: "50 questions · Closures, event loop, generics, async, Express, streams",
+                de: "50 Fragen · Closures, Event Loop, Generics, Async, Express, Streams",
+                ru: "50 вопросов · Замыкания, event loop, generics, async, Express, streams",
+                uk: "50 питань · Замикання, event loop, generics, async, Express, streams"
+            }
+        },
+        {
+            href: "react.html",
+            title: { en: "React", de: "React", ru: "React", uk: "React" },
+            meta: {
+                en: "50 questions · Hooks, rendering, state management, Next.js, patterns",
+                de: "50 Fragen · Hooks, Rendering, State Management, Next.js, Patterns",
+                ru: "50 вопросов · Хуки, рендеринг, управление состоянием, Next.js, паттерны",
+                uk: "50 питань · Хуки, рендеринг, управління станом, Next.js, патерни"
+            }
+        },
+        {
+            href: "behavioral-agile.html",
+            title: { en: "Behavioral & Agile", de: "Behavioral & Agile", ru: "Поведенческие и Agile", uk: "Поведінкові та Agile" },
+            meta: {
+                en: "50 questions · Scrum, Kanban, STAR method, metrics, conflict resolution",
+                de: "50 Fragen · Scrum, Kanban, STAR-Methode, Metriken, Konfliktlösung",
+                ru: "50 вопросов · Scrum, Kanban, метод STAR, метрики, решение конфликтов",
+                uk: "50 питань · Scrum, Kanban, метод STAR, метрики, вирішення конфліктів"
+            }
+        }
+    ];
+
+    let currentLang = localStorage.getItem('quizLang') || 'en';
+
+    function setLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('quizLang', lang);
+        render();
+    }
+
+    function render() {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
+        document.getElementById('page-title').textContent = ui[currentLang].title;
+        document.getElementById('page-subtitle').textContent = ui[currentLang].subtitle;
+        const grid = document.getElementById('quiz-grid');
+        grid.innerHTML = quizzes.map(q => `
+            <a class="quiz-link" href="${q.href}">
+                <div class="quiz-title">${q.title[currentLang]}</div>
+                <div class="quiz-meta">${q.meta[currentLang]}</div>
+            </a>
+        `).join('');
+    }
+
+    render();
+    </script>
 </body>
 </html>

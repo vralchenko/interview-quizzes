@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireart Studio - Senior .NET Tech Interview Prep</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--bg-card);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .card.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-badge {
+            display: inline-block;
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .option-btn.correct {
+            background-color: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+        }
+
+        .option-btn.wrong {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+            opacity: 0.7;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .explanation.show {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .next-btn,
+        .restart-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: none;
+        }
+
+        .next-btn.show,
+        .restart-btn.show {
+            display: block;
+        }
+
+        .next-btn:hover,
+        .restart-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        #results-card {
+            text-align: center;
+        }
+
+        .final-score {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 20px 0;
+        }
+
+        #setup-card {
+            text-align: center;
+        }
+
+        .batch-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .batch-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--accent);
+            color: var(--text-main);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .batch-btn:hover {
+            background-color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Fireart Studio Tech Prep</h1>
+            <p>Interactive self-assessment for Senior .NET Backend Lead interview</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="card active" id="setup-card">
+            <h2>Welcome to the 50-Question Ultimate Test</h2>
+            <p>This pool contains **50** high-level technical questions covering .NET Internals, Postgres, Architecture,
+                Docker, and CI/CD.</p>
+            <div class="batch-controls">
+                <button class="batch-btn" onclick="startQuiz(20)">Take a Random 20-Question Sprint</button>
+                <button class="batch-btn" onclick="startQuiz(50)">Marathon: Take All 50 Questions</button>
+            </div>
+        </div>
+
+        <!-- Quiz Area -->
+        <div id="quiz-area" style="display: none;">
+            <div class="score-display">
+                <span id="q-counter">Question 1 of X</span>
+                <span id="score-tracker">Score: 0</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+
+            <div id="quiz-container">
+                <!-- Cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Results Area -->
+        <div class="card" id="results-card">
+            <h2>Assessment Complete!</h2>
+            <div class="final-score" id="final-score-text">0/X</div>
+            <p id="feedback-text" style="font-size: 1.1rem; margin-bottom: 30px;"></p>
+            <button class="restart-btn show" onclick="location.reload()" style="margin: 0 auto;">Back to Start
+                Menu</button>
+        </div>
+    </div>
+
+    <script>
+    // 50 Questions Full Bank!
+    const allQuestions = [
+        // C# & .NET Core
+        { category: ".NET Internals", question: "When should you use ValueTask<T> instead of Task<T>?", options: [ "Always, because it is essentially a struct version of Task.", "Only when the method frequently returns synchronously (e.g., cached results) to avoid heap allocations.", "When you need to await the result from multiple threads simultaneously.", "When running CPU-bound operations via Task.Run." ], correctIndex: 1, explanation: "ValueTask<T> is a struct. If an async method completes synchronously, ValueTask avoids allocating a Task object on the heap, saving GC pressure." },
+        { category: ".NET Internals", question: "What is the primary purpose of ConfigureAwait(false)?", options: [ "It forces the task to run on a brand new background thread.", "It disables exceptions from being thrown back to the caller.", "It prevents the continuation from capturing the SynchronizationContext, avoiding deadlocks in UI/legacy apps.", "It tells the GC to immediately dispose of the Task when finished." ], correctIndex: 2, explanation: "ConfigureAwait(false) allows the continuation of the async method to run on any ThreadPool thread, preventing deadlocks when the calling thread is blocked." },
+        { category: ".NET Framework vs Core", question: "Which is a major difference between .NET Framework and .NET Core?", options: [ ".NET Core uses WCF servers natively.", ".NET Core relies heavily on the Windows Registry.", ".NET Core is modular, cross-platform, and utilizes Kestrel instead of systemic IIS bindings.", ".NET Core does not have a Garbage Collector." ], correctIndex: 2, explanation: ".NET Core was completely rewritten to be cross-platform (Windows, Linux, macOS) and modular. It lacks legacy dependencies like WebForms." },
+        { category: "Garbage Collection", question: "What happens when an object hits the Large Object Heap (LOH)?", options: [ "It is collected in Gen 0.", "It triggers a full Gen 2 sweep because LOH collections are extremely expensive.", "It never gets garbage collected.", "It is automatically compressed mathematically." ], correctIndex: 1, explanation: "Objects over 85,000 bytes go to the LOH. Collecting the LOH also forces a full Gen 2 collection, which stops all threads (STW)." },
+        { category: "Memory Management", question: "Which statement about Span<T> is true?", options: [ "Span<T> can be stored as a field in a class.", "Span<T> is a ref struct, meaning it can only live on the stack, guaranteeing memory safety without heap allocations.", "Span<T> is primarily used to interact with async/await state machines.", "Span<T> implements IEnumerable to allow LINQ queries." ], correctIndex: 1, explanation: "Span<T> is a ref struct. It cannot be boxed or stored in the heap. It provides a highly optimized, zero-allocation window into contiguous memory." },
+        { category: "Entity Framework", question: "What is a major pitfall of using IEnumerable<T> instead of IQueryable<T> when accessing EF Core?", options: [ "IEnumerable queries cannot be joined with other tables.", "Applying a .Where() to an IEnumerable pulls the entire table into memory first.", "IEnumerable causes a database deadlock if accessed across threads.", "IEnumerable does not support async traversal." ], correctIndex: 1, explanation: "IQueryable builds a SQL expression tree executed by the DB. IEnumerable immediately materializes the query, downloading all rows to RAM before filtering." },
+        { category: "Async Programming", question: "How do you mitigate deadlocks in asynchronous C# code?", options: [ "By using Thread.Sleep().", "By using .Result or .Wait() instead of await.", "Never block async code using .Result or .Wait(). Use 'await' all the way down the stack.", "By disabling the Garbage Collector during execution." ], correctIndex: 2, explanation: "Using .Result blocks the current thread until the task finishes. If the task requires that same thread to finish its continuation, it deadlocks." },
+        { category: "Task vs Thread", question: "What is the difference between Task.Run and Task.Factory.StartNew?", options: [ "Task.Run is strictly for UI threads.", "Task.Run is the safe, modern wrapper defaults for CPU-bound work and automatically unwraps child tasks.", "Task.Factory.StartNew is exclusively for asynchronous I/O.", "They are functionally identical in .NET 8." ], correctIndex: 1, explanation: "Task.Run uses the ThreadPool and automatically unwraps nested tasks. StartNew is low-level and does not unwrap nested tasks automatically." },
+        { category: "Dependency Injection", question: "What happens if you inject a Scoped service into a Singleton service in ASP.NET Core?", options: [ "It works normally.", "It throws a Captive Dependency Exception because it creates a memory leak by keeping the Scoped service alive indefinitely.", "The Singleton automatically changes to Scoped.", "The Scoped service is ignored." ], correctIndex: 1, explanation: "This creates a 'Captive Dependency'. The Singleton holds a reference to the Scoped service, preventing it from being garbage collected." },
+        { category: "ASP.NET Core", question: "In ASP.NET Core, the Middleware pipeline executes in what order?", options: [ "Randomly based on DI.", "In the exact order they are added in Program.cs (top-down in, bottom-up out).", "Reverse order of registration.", "Routing middleware always executes last." ], correctIndex: 1, explanation: "Middleware follows the Chain of Responsibility pattern. The request flows through middleawares in the order they are added via 'app.Use...()'." },
+        { category: "Performance Optimization", question: "What is the primary difference between AddHttpClient and new HttpClient()?", options: [ "AddHttpClient encrypts traffic automatically.", "new HttpClient() leaves TCP sockets in a TIME_WAIT state after disposal, causing socket exhaustion under heavy load.", "new HttpClient() is faster.", "AddHttpClient cannot use standard HTTP verbs." ], correctIndex: 1, explanation: "Instantiating HttpClient manually creates a new socket connection. Releasing it leaves it in TIME_WAIT. AddHttpClient utilizes IHttpClientFactory to pool socket connections safely." },
+        { category: "C# Features", question: "What is the main benefit of C# Records?", options: [ "They compile directly to raw machine code without MSIL.", "They provide built-in, value-based equality semantics for reference types, making them perfect for immutable DTOs.", "They allow multiple inheritance.", "They automatically serialize to XML." ], correctIndex: 1, explanation: "Records are reference types but compare their values properties automatically, instead of comparing memory references like classic classes. Great for DDD and CQRS." },
+        { category: "Resilience Patterns", question: "How do you implement resilience in .NET HTTP calls using Polly?", options: [ "By wrapping calls in nested try-catch blocks.", "By defining policies like Retries with Exponential Backoff and Circuit Breakers on the IHttpClientBuilder.", "By increasing timeout limits to 300 seconds.", "By restarting the server node dynamically." ], correctIndex: 1, explanation: "Polly allows you to configure rules: e.g. 'If network fails, wait 2 seconds, try again. If fails 3 times, open a Circuit Breaker'." },
+        { category: "Generics", question: "What does Covariance ('out' keyword) allow in C# generics?", options: [ "Using a more derived type than specified (e.g. assigning IEnumerable<Dog> to IEnumerable<Animal>).", "Using a less derived type than specified.", "Allowing generics to accept structural integers.", "Bypassing type safety arrays." ], correctIndex: 0, explanation: "Covariance means you can treat a collection of derived objects (Dogs) as a collection of base objects (Animals), because you are only reading them 'out'." },
+        { category: "Async Cancellation", question: "Why is CancellationTokenSource critical in ASP.NET Core API design?", options: [ "It generates secure JWT tokens.", "It allows cooperative cancellation; if the user closes their browser, the token is triggered, stopping downstream SQL queries instantly.", "It deletes expired cookies.", "It overrides the GC timeout limit." ], correctIndex: 1, explanation: "Passing CancellationToken through your entire stack ensures that if an HTTP request is aborted, the system doesn't waste database/CPU cycles computing a response nobody will receive." },
+        
+        // Architecture & Design Patterns
+        { category: "Clean Architecture", question: "In Clean Architecture, which layer should contain the Core Entities and business logic exceptions?", options: [ "Infrastructure", "Application", "Domain", "Presentation" ], correctIndex: 2, explanation: "The Domain Layer sits at the center. It has zero dependencies on any other project or outer frameworks, containing pure business logic." },
+        { category: "Clean Architecture", question: "According to the dependency rule in Clean Architecture, how should layers interact?", options: [ "Outer layers depend on inner layers.", "Inner layers depend on outer layers.", "All layers depend on UI.", "Database depends on Application." ], correctIndex: 0, explanation: "Dependencies must only point inward. Domain knows nothing about Application. Application knows nothing about Infrastructure." },
+        { category: "CQRS", question: "When should you implement CQRS?", options: [ "For simple CRUD applications.", "When read and write workloads have drastically different performance, scaling, or database model requirements.", "When migrating to NoSQL.", "Always, it is mandatory in .NET 8." ], correctIndex: 1, explanation: "CQRS separates Commands (writes) from Queries (reads). It adds overhead but is critical when you need to scale database reads 100x more than database writes." },
+        { category: "DDD", question: "What is an Aggregate Root in Domain-Driven Design?", options: [ "A materialized view.", "A DB migration script.", "A single entity that guards the consistency boundaries for a cluster of associated child entities.", "A global exception handler." ], correctIndex: 2, explanation: "An Aggregate Root is the ONLY entry point to a group of related objects. e.g. You cannot modify an 'OrderLine' without going through the 'Order' aggregate root to update totals." },
+        { category: "Design Patterns", question: "What is a major limitation of the standard generic Repository pattern over Entity Framework Core?", options: [ "EF Core DbSets are already Repositories, so creating a generic wrap over them is often considered a redundant anti-pattern.", "It stops LINQ usage.", "It causes database deadlocks natively.", "It blocks dependency injection." ], correctIndex: 0, explanation: "DbContext is already a Unit of Work, and DbSet is already a Repository. Wrapping a generic repository over EF hides EF's powerful features like IQueryable translation." },
+        { category: "Microservices", question: "How do you handle distributed transactions across Microservices?", options: [ "Traditional 2PC (Two-Phase Commit).", "Using the Saga Pattern, issuing compensating transactions if a downstream step fails.", "Sharing the same physical database across all microservices.", "Foreign key constraints." ], correctIndex: 1, explanation: "2PC is blocking and heavily kills scale. In Sagas, if Service A completes and Service B fails, Service B emits a 'Failed' event, and Service A undoes its local commit." },
+        { category: "API Gateway", question: "What is the primary role of the API Gateway pattern?", options: [ "To format hard drives on the cloud.", "To sit between clients and microservices, handling cross-cutting concerns like auth, rate limiting, and request routing (e.g., Ocelot/YARP).", "To execute Python scripts inside .NET.", "To compile C# code." ], correctIndex: 1, explanation: "Gateways act as a reverse proxy. The frontend client makes 1 call to the Gateway, and the Gateway routes it to the correct hidden internal Microservice." },
+        { category: "Legacy Refactoring", question: "How do you refactor heavily coupled legacy code without breaking production?", options: [ "Stop production and rewrite it (Big Bang).", "Using the Strangler Fig Pattern: putting a proxy in front, slowly rewriting features as new microservices, and routing traffic to the new ones.", "Using NoSQL databases.", "Bypassing the proxy entirely." ], correctIndex: 1, explanation: "The Strangler Fig wraps the legacy monolith. As you build a new API, you tell the proxy 'Route /api/users to the new microservice, route everything else to legacy'. Zero downtime." },
+        { category: "Design Patterns", question: "Why are traditional static Singletons considered anti-patterns in modern C#?", options: [ "They are deprecated by Microsoft.", "They hide dependencies globally, make unit testing extremely difficult, and cause hidden thread-safety issues.", "They are too fast for modern CPUs.", "They allocate too much memory." ], correctIndex: 1, explanation: "Static global state makes it impossible to mock dependencies in Unit Tests. Modern C# uses Dependency Injection (AddSingleton) which solves these lifetime and testing issues cleanly." },
+        { category: "Design Patterns", question: "Which pattern injects different algorithmic behaviors at runtime via a common interface?", options: [ "Factory Method", "Decorator", "Strategy Pattern", "Adapter" ], correctIndex: 2, explanation: "The Strategy Pattern. e.g. An IPaymentStrategy interface that could be instantiated as StripePayment or PayPalPayment at runtime without changing the consuming class." },
+        { category: "DDD / Eventing", question: "What is Event Sourcing?", options: [ "Sending emails based on triggers.", "Instead of storing current state, storing a sequence of immutable, append-only events (e.g. OrderCreated, ItemAdded). Current state is derived by replaying them.", "Using WebHooks for third-party tracking.", "Sourcing data from NoSQL." ], correctIndex: 1, explanation: "Event Sourcing provides a perfect audit log. The source of truth is the absolute history of changes." },
+        { category: "API Design", question: "How do you implement Idempotency in a REST API?", options: [ "By using the GET HTTP verb for everything.", "By requiring the client to send a unique Idempotency-Key header, and caching that key on the server (via Redis) to ignore duplicates.", "By encrypting the payload.", "By removing CORS." ], correctIndex: 1, explanation: "Crucial for Payments (e.g. Stripe). If a user's network drops and their app retries the POST request, the server sees the cached Idempotency-Key and returns the original result without charging twice." },
+        { category: "Security", question: "What is the difference between OAuth2 and OpenID Connect (OIDC)?", options: [ "They are identical competing standards.", "OAuth2 is an authorization protocol (granting access). OIDC is an authentication layer on top of it (verifying WHO the user is via ID Tokens).", "OAuth2 uses XML, OIDC uses JSON.", "OIDC is a Microsoft exclusive protocol." ], correctIndex: 1, explanation: "OAuth2 gives you an Access Token (permissions to DO something). OIDC gives you an ID Token (JWT with claims about WHO you are)." },
+        { category: "Security", question: "How do you prevent Mass Assignment vulnerabilities in an ASP.NET Core API?", options: [ "Disable EF Core Tracking.", "Never accept raw EF Core database entities as API bodies; always map inputs through strict DTOs (Data Transfer Objects).", "Encrypt the database password.", "Use CORS." ], correctIndex: 1, explanation: "If you accept a 'User' EF entity on a POST endpoint and apply it, a hacker could send `{\"IsAdmin\": true}` in the JSON and accidentally gain admin privileges. DTOs restrict incoming fields." },
+        
+        // Databases (Postgres, EF Core, Redis)
+        { category: "PostgreSQL", question: "What does the EXPLAIN ANALYZE command do in PostgreSQL?", options: [ "Checks syntax.", "Actually executes the query and returns the real execution time, row counts, and the exact steps taken (Seq Scan, Index Scan).", "Reindexes the table automatically.", "Generates an ER diagram." ], correctIndex: 1, explanation: "Standard EXPLAIN just estimates. EXPLAIN ANALYZE forces the query to physically run, making it the ultimate tool for debugging exactly why a query is slow." },
+        { category: "Databases", question: "Explain the difference between Clustered and Non-Clustered Indexes.", options: [ "They are the same.", "Clustered indexes define the physical sorting of the data on the disk (max 1 per table). Non-Clustered are separate data structures holding pointers to the physical rows.", "Clustered indexes are placed in RAM, Non-Clustered on SSD.", "Non-Clustered indexes are automatically generated by Foreign Keys." ], correctIndex: 1, explanation: "Because a Clustered Index dictates the physical sort order of the rows, you can only have ONE per table (usually the Primary Key)." },
+        { category: "Databases", question: "What does Isolation mean in ACID properties?", options: [ "The database sits on an isolated virtual network.", "Concurrent transactions don’t interfere with each other, dictated by transaction isolation levels.", "Data cannot be joined with external tables.", "Backups are kept isolated." ], correctIndex: 1, explanation: "Isolation prevents dirty reads, phantom reads, and non-repeatable reads during parallel database mutations." },
+        { category: "EF Core", question: "How do you fix the N+1 Query Problem in Entity Framework?", options: [ "By adding multi-threading.", "By using .Include() (Eager Loading) or Projection via .Select() to pull related data in a single SQL query.", "By using .AsNoTracking().", "By opening multiple SQL connections." ], correctIndex: 1, explanation: "Without .Include, accessing a child property inside a 'foreach' loop triggers a brand new SQL SELECT query per iteration, instantly killing database scale." },
+        { category: "Redis", question: "How does Redis fundamentally differ from PostgreSQL?", options: [ "It uses XML.", "Redis is an in-memory, key-value NoSQL data store operating in RAM, giving sub-millisecond speeds suitable for volatile caching.", "Redis forces strict ACID schemas natively.", "Redis is read-only." ], correctIndex: 1, explanation: "Redis is not a relational DB. It is a dictionary living in RAM. Ideal for caching API responses, rate limit counters, and SignalR backplanes." },
+        { category: "Databases", question: "What is a 'Dirty Read'?", options: [ "Reading data from an unencrypted connection.", "Transaction A reading data that Transaction B has modified but NOT YET COMMITTED.", "Reading data from a corrupted sector.", "Reading without an Index." ], correctIndex: 1, explanation: "If Transaction B rolls back, Transaction A is now operating on 'fake' data that never officially existed. 'Read Committed' isolation prevents this." },
+        { category: "PostgreSQL", question: "What is the specific role of the VACUUM command in PostgreSQL?", options: [ "It deletes tables that haven't been queries in 30 days.", "It cleans up 'dead tuples' (old versions of rows created by MVCC updates/deletes), recovering disk space and index performance.", "It clears the transaction log.", "It backs up the server schema." ], correctIndex: 1, explanation: "Postgres uses Multi-Version Concurrency Control. Updates don't overwrite rows, they hide the old one and write a new one. VACUUM is required to physically delete the hidden dead rows." },
+        { category: "Performance Optimization", question: "What is the Cache-Aside pattern?", options: [ "Storing cache in the browser LocalStorage.", "App checks Redis -> Returns if hit. If miss -> Queries Database -> App writes to Redis -> Returns to user.", "Redis syncs directly to the Database skipping the application layer.", "Caching the UI layout only." ], correctIndex: 1, explanation: "The application code is responsible for checking the cache, and populating it if a miss occurs." },
+        { category: "Redis Integration", question: "How do you avoid a 'Race Condition' overwriting a key in Redis?", options: [ "Use Redis Transactions (MULTI/EXEC), Lua scripting, or a Distributed Lock (Redlock).", "Redis single-threading prevents all race conditions natively.", "Add Thread.Sleep().", "Store a boolean flag in Postgres first." ], correctIndex: 0, explanation: "Because the App-to-Redis bridge involves network latency, reading a value and writing it back allows a second pod to read the old value in between. Lua scripts execute atomically entirely entirely inside Redis." },
+        { category: "EF Core", question: "What is the massive benefit of IQueryable.AsNoTracking()?", options: [ "It disables SQL injection protection.", "It bypasses the EF Core Change Tracker, massively reducing memory overhead and execution time for read-only queries.", "It allows reading uncommitted DB transactions.", "It drops the index during query." ], correctIndex: 1, explanation: "If you only need to output data to a user via an API and don't plan to call SaveChanges(), AsNoTracking prevents EF from building internal memory snapshots." },
+        { category: "EF Core", question: "How do you optimize very slow bulk inserts (100,000+ rows) in .NET to PostgreSQL?", options: [ "Use DbContext.AddRange() inside a tight For loop.", "Bypass EF Core and use the native COPY command (via Npgsql BeginBinaryImport) or SqlBulkCopy.", "Use multiple Threads to call SaveChanges().", "Serialize the array to JSON and store it in one row." ], correctIndex: 1, explanation: "EF Core generates an individual INSERT statement for every entity, which crushes network latency. Bulk utilities open a binary streaming tunnel, pushing hundreds of thousands of rows per second." },
+        { category: "Databases", question: "What happens during a C# Database Connection Pooling process?", options: [ "It merges multiple SQL tables.", "Instead of opening/closing raw TCI/IP sockets per API request (which is incredibly slow), it reuses a cache of already-open valid database connections.", "It load-balances connections across multiple databases.", "It limits users to 1 query per second." ], correctIndex: 1, explanation: "Connection Pooling is handled by .NET ADO.NET under the hood. It ensures when you 'Dispose' a connection, it goes back to the active pool instead of physically dropping the socket." },
+        { category: "DevOps / EF Core", question: "Why avoid DbContext.Database.Migrate() at application startup?", options: [ "It compiles schemas incorrectly.", "If multiple Docker pods start simultaneously, they will race to apply the same SQL script, causing DB locks or corruption.", "It consumes too much RAM.", "It drops the Identity column." ], correctIndex: 1, explanation: "Migrations should be generated to raw SQL scripts and applied during the CI/CD Pipeline deployment phase (e.g. Flyway) when no traffic is hitting the DB." },
+        { category: "EF Core", question: "What is Optimistic Concurrency in EF Core?", options: [ "Locking the SQL row physically so nobody else can read/write until finished.", "Allowing parallel edits but checking a [ConcurrencyCheck] or RowVersion token at SaveChanges; throwing an exception if the row was altered by another thread.", "Assuming the query will succeed and not using Try/Catch.", "Speeding up inserts." ], correctIndex: 1, explanation: "Optimistic concurrency doesn't lock rows in the DB. It checks if the row's 'Version' string changed between the moment you queried it and the moment you execute the Update statement." },
+        
+        // Docker, CI/CD, Cloud
+        { category: "Docker", question: "What is the primary architectural benefit of a Docker Multi-Stage Build?", options: [ "It allows node.js and C# to run on the same thread.", "It uses a heavy image to build code, but copies only the compiled binaries to a tiny Alpine runtime image, making the final image extremely small and secure.", "It prevents DLL injections.", "It auto-generates Swagger docs." ], correctIndex: 1, explanation: "Stage 1 (AS build) has the full 800MB .NET SDK. Stage 2 (AS final) has a 100MB ASP.NET Runtime. By copying only /app/publish from build to final, hackers cannot access source code or build tools." },
+        { category: "Docker", question: "How are Docker Volumes used with Postgres containers?", options: [ "To amplify sound.", "To map a persistent folder on the Host OS to the internal container directory, ensuring database records survive if the container crashes or is deleted.", "To increase RAM volume.", "To share CPU cache." ], correctIndex: 1, explanation: "Containers are ephemeral (volatile). If you don't map a Volume for Postgres `/var/lib/postgresql/data`, all your database records vanish the second the container stops." },
+        { category: "CI/CD", question: "Walk through a standard CI/CD Pipeline phase for a .NET backend.", options: [ "Deploy -> Code Push -> Unit Test", "Code Push -> dotnet build -> dotnet test -> docker build -> docker push (Registry) -> kubectl apply (Deploy)", "Run Migrations -> Write Code -> Publish", "Upload FTP -> Download IIS -> Restart Machine" ], correctIndex: 1, explanation: "A CI pipeline compiles, tests, and builds the container image. The CD pipeline takes that image registry URL and tells the Cloud Orchestrator to swap out to the new version." },
+        { category: "Deployment", question: "What is a Blue-Green Deployment?", options: [ "Deploying UI and Backend simultaneously.", "Maintaining two identical production environments (Blue and Green). Code is placed on idle Green, tested, and a Load Balancer instantly switches live traffic over. Zero downtime.", "Deploying to 5% of users first (Canary).", "Using Blue colored consoles in AWS." ], correctIndex: 1, explanation: "If an error occurs exactly after the switch, you just flip the Load Balancer back to Blue instantly to rollback. Very safe deployment strategy." },
+        { category: "Cloud Security", question: "How do you manage API Secrets in a Cloud architecture?", options: [ "Commit them to GitHub inside appsettings.json.", "Store them in a public Docker container variable.", "Use services like AWS Secrets Manager or Azure KeyVault, referencing the paths dynamically in CI/CD pipeline environment variables.", "Bake them via Dockerfile ENV variables." ], correctIndex: 2, explanation: "Never check connection strings into Git. Environment variables injected at pod-creation runtime is the industry standard (12-Factor App methodology)." },
+        { category: "Cloud Concepts", question: "What is Infrastructure as Code (IaC)?", options: [ "Writing machine code in Assembly.", "Managing cloud infrastructure (e.g. EC2, RDS, VPCs) through version-controlled files (Terraform, CloudFormation) instead of manual GUI clicks.", "Using C# to write bash scripts.", "Creating dynamic SQL triggers." ], correctIndex: 1, explanation: "IaC allows you to spin up an exact replica of your entire Production enterprise network on Amazon AWS in 5 minutes by running a Terraform script." },
+        { category: "Architecture Design", question: "Explain horizontal vs vertical scaling.", options: [ "Horizontal: Adding more CPU/RAM (Scaling UP). Vertical: Adding more instances behind a load balancer (Scaling OUT).", "Horizontal: Adding more instances. Vertical: Upgrading the server's CPU/RAM.", "Vertical applies to UI, Horizontal to DB.", "They are cloud-specific terms for Load Balancing." ], correctIndex: 1, explanation: "Vertical (Up) has a physical hardware ceiling. Horizontal (Out) relies on stateless microservices and can theoretically scale infinitely by adding more cheap nodes." },
+        { category: "Kubernetes", question: "What is Kubernetes (K8s) in simple terms?", options: [ "A C# web framework.", "An open-source container orchestration platform. It automates deployment, health-checks, scaling, and load balancing of Docker containers.", "A NoSQL database.", "A continuous integration server." ], correctIndex: 1, explanation: "If you want 10 copies of your API running worldwide, Kubernetes handles load balancing them, restarting them if they crash, and rolling out new versions." },
+        
+        // Node.js, Patterns & Practical
+        { category: "Node.js Architecture", question: "How does Node.js differ fundamentally from ASP.NET Core in thread execution?", options: [ "Node uses multi-threading natively.", ".NET Core uses a Thread Pool. Node.js operates on a single-threaded Event Loop, delegating non-blocking I/O tasks to the OS kernel.", "They are functionally identical in execution paths.", "Node requires compiled byte-code." ], correctIndex: 1, explanation: "Because Node is single-threaded, if you execute a heavy CPU calculation (like `while(true) calculatePrimes()`), the entire web server freezes for all users. .NET would just span it on a background ThreadPool thread." },
+        { category: "Architecture Patterns", question: "What is the Circuit Breaker pattern (via Polly)?", options: [ "It shuts down the server if CPU hits 100%.", "If a downstream API fails repeatedly, it 'opens' the circuit, instantly failing fast for future calls instead of waiting for TCP timeouts, allowing the downstream API time to recover.", "It prevents recursive database queries.", "It blocks malicious IP addresses." ], correctIndex: 1, explanation: "If Service A depends on Service B, and Service B is dead, Service A threads will hang waiting for a timeout. A Circuit Breaker stops making the call entirely, saving Service A from crashing." },
+        { category: "Logging", question: "What is the importance of a 'Correlation ID' in Microservices?", options: [ "It maps relational data to NoSQL.", "It's a GUID passed in HTTP headers across all service hops. It allows Log Aggregators (ELK) to filter searching and track a specific user's entire journey across 15 different apps.", "It authorizes Identity claims via JWT.", "It is used for database unique identities." ], correctIndex: 1, explanation: "If microservice B throws an error, without a Correlation ID passed from Microservice A, you have no idea WHICH original client request caused the error." },
+        { category: "Node.js / Express", question: "In Express.js, what is 'middleware' conceptually similar to in .NET?", options: [ "View Components", "Entity Framework DbContext", "It is conceptually identical to the ASP.NET Core Middleware pipeline (filters/delegates handling request and response chains via next()).", "Razor Pages" ], correctIndex: 2, explanation: "In Node `app.use((req,res,next)=>{})` is identical in philosophy to `.Use(async (context,next)=>{})` in C#." },
+        { category: "C# Internals", question: "What does the 'yield return' statement actually do in C#?", options: [ "Yields CPU time to another thread natively.", "Generates an IEnumerable state machine lazily, returning one element at a time on iteration without loading the entire collection into memory.", "It abruptly terminates a function.", "Returns a ValueTask." ], correctIndex: 1, explanation: "Lazy evaluation. If you query 1,000,000 records but only iterate the first 5 inside a `foreach` loop, `yield return` ensures the system only actually evaluates those 5." },
+        { category: "Security", question: "What is CSRF (Cross-Site Request Forgery) and how is it usually mitigated in APIs?", options: [ "Hacking SSL certificates.", "Exploiting stateless JWTs directly via URL params.", "Tricking a victim's browser into submitting a request to a site where they are authenticated via Cookies. Mitigated by Anti-forgery Tokens (if using Cookies) or simply using strict stateless JWT headers.", "Injecting SQL via forms." ], correctIndex: 2, explanation: "With standard JWTs sent as an `Authorization: Bearer` header (not an auto-sent Cookie), CSRF is naturally mitigated because a malicious third-party site cannot read the victim's LocalStorage to attach the header." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedQuestions = [];
+    let currentTotalQuestions = 20;
+
+    const setupCard = document.getElementById('setup-card');
+    const quizArea = document.getElementById('quiz-area');
+    const quizContainer = document.getElementById('quiz-container');
+    const qCounter = document.getElementById('q-counter');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressFill = document.getElementById('progress');
+    const resultsCard = document.getElementById('results-card');
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    // Exposed to the global scope
+    window.startQuiz = function(numQuestions) {
+        currentTotalQuestions = numQuestions;
+        // Shuffle the 50 hardcoded questions and slice the requested amount
+        selectedQuestions = shuffleArray(allQuestions).slice(0, currentTotalQuestions);
+        
+        currentQuestionIndex = 0;
+        score = 0;
+        
+        setupCard.classList.remove('active');
+        setupCard.style.display = 'none';
+        
+        quizArea.style.display = 'block';
+        resultsCard.classList.remove('active');
+        
+        updateScoreboard();
+        renderQuestion();
+    };
+
+    function updateScoreboard() {
+        qCounter.innerText = `Question ${currentQuestionIndex + 1} of ${currentTotalQuestions}`;
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex) / currentTotalQuestions) * 100}%`;
+    }
+
+    function renderQuestion() {
+        quizContainer.innerHTML = '';
+        const q = selectedQuestions[currentQuestionIndex];
+        
+        const card = document.createElement('div');
+        card.className = 'card active';
+        
+        card.innerHTML = `
+            <div class="category-badge">${q.category}</div>
+            <div class="question-text">${q.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="options">
+                ${q.options.map((opt, i) => `
+                    <button class="option-btn" onclick="checkAnswer(${i}, ${q.correctIndex}, this)">
+                        ${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+                    </button>
+                `).join('')}
+            </div>
+            <div class="explanation" id="expl-${currentQuestionIndex}">
+                <strong>Explanation:</strong> ${q.explanation}
+            </div>
+            <div class="controls">
+                <button class="next-btn" id="next-${currentQuestionIndex}" onclick="nextQuestion()">Continue</button>
+            </div>
+        `;
+        quizContainer.appendChild(card);
+        updateScoreboard();
+    }
+
+    window.checkAnswer = function(selectedIndex, correctIndex, btnElement) {
+        const optionsContainer = btnElement.parentElement;
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        const nextBtn = document.getElementById(`next-${currentQuestionIndex}`);
+        const explanation = document.getElementById(`expl-${currentQuestionIndex}`);
+
+        // Disable all buttons to prevent multiple clicks
+        buttons.forEach(b => b.disabled = true);
+
+        if (selectedIndex === correctIndex) {
+            btnElement.classList.add('correct');
+            score++;
+        } else {
+            btnElement.classList.add('wrong');
+            buttons[correctIndex].classList.add('correct'); // Highlight actual correct answer
+        }
+
+        explanation.classList.add('show');
+        nextBtn.classList.add('show');
+        
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex + 1) / currentTotalQuestions) * 100}%`;
+    };
+
+    window.nextQuestion = function() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentTotalQuestions) {
+            renderQuestion();
+        } else {
+            showResults();
+        }
+    };
+
+    function showResults() {
+        quizArea.style.display = 'none';
+        
+        document.getElementById('final-score-text').innerText = `${score} / ${currentTotalQuestions}`;
+        
+        let feedback = "";
+        let percentage = score / currentTotalQuestions;
+        if(percentage >= 0.8) feedback = "🔥 Outstanding! You possess deep Senior-level architectural knowledge. You're ready for the Team Lead interview.";
+        else if(percentage >= 0.6) feedback = "Solid base! However, review the explanations on EF Core, Docker optimizations, and Asynchronous C# pitfalls.";
+        else feedback = "Use this tool to study up! Pay special attention to Microservices patterns (CQRS, Sagas) and Database Isolation.";
+        
+        document.getElementById('feedback-text').innerText = feedback;
+        resultsCard.classList.add('active');
+    }
+
+    </script>
+</body>
+
+</html>

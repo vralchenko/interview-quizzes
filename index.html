@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Quizzes — Viktor Ralchenko</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        .quiz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .quiz-link {
+            display: block;
+            background-color: var(--bg-card);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px 24px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+        .quiz-link:hover {
+            border-color: var(--accent);
+            background-color: rgba(59,130,246,0.1);
+        }
+        .quiz-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .quiz-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interview Quizzes</h1>
+        <p class="subtitle">Technical interview preparation — self-assessment quizzes</p>
+        <div class="quiz-list">
+            <a class="quiz-link" href="fireart-senior-dotnet.html">
+                <div class="quiz-title">Fireart Studio — Senior .NET Backend Lead</div>
+                <div class="quiz-meta">50 questions · .NET Internals, Architecture, Postgres, Docker, CI/CD</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -24,7 +24,7 @@
             line-height: 1.6;
         }
         .container {
-            max-width: 600px;
+            max-width: 860px;
             width: 100%;
         }
         h1 {
@@ -34,13 +34,19 @@
             color: var(--text-muted);
             margin-bottom: 40px;
         }
-        .quiz-list {
-            display: flex;
-            flex-direction: column;
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
+        @media (max-width: 600px) {
+            .quiz-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .quiz-link {
-            display: block;
+            display: flex;
+            flex-direction: column;
             background-color: var(--bg-card);
             border: 2px solid rgba(255,255,255,0.1);
             border-radius: 12px;
@@ -54,13 +60,13 @@
             background-color: rgba(59,130,246,0.1);
         }
         .quiz-title {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
         .quiz-meta {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -68,26 +74,34 @@
     <div class="container">
         <h1>Interview Quizzes</h1>
         <p class="subtitle">Technical interview preparation — self-assessment quizzes</p>
-        <div class="quiz-list">
+        <div class="quiz-grid">
             <a class="quiz-link" href="fireart-senior-dotnet.html">
-                <div class="quiz-title">Fireart Studio — Senior .NET Backend Lead</div>
+                <div class="quiz-title">Fireart Studio — Senior .NET</div>
                 <div class="quiz-meta">50 questions · .NET Internals, Architecture, Postgres, Docker, CI/CD</div>
             </a>
             <a class="quiz-link" href="solid-principles.html">
                 <div class="quiz-title">SOLID Principles</div>
-                <div class="quiz-meta">50 questions · SRP, OCP, LSP, ISP, DIP with real-world C#/.NET scenarios</div>
+                <div class="quiz-meta">50 questions · SRP, OCP, LSP, ISP, DIP with C#/.NET scenarios</div>
             </a>
             <a class="quiz-link" href="clean-architecture.html">
                 <div class="quiz-title">Clean Architecture</div>
-                <div class="quiz-meta">50 questions · Domain, Application, Infrastructure layers, CQRS, DDD, MediatR</div>
+                <div class="quiz-meta">50 questions · Domain, Application, Infrastructure, CQRS, DDD, MediatR</div>
             </a>
             <a class="quiz-link" href="design-patterns.html">
                 <div class="quiz-title">Design Patterns</div>
-                <div class="quiz-meta">50 questions · GoF Creational, Structural, Behavioral + modern .NET patterns</div>
+                <div class="quiz-meta">50 questions · GoF Creational, Structural, Behavioral + modern .NET</div>
             </a>
             <a class="quiz-link" href="sql-databases.html">
                 <div class="quiz-title">SQL & Databases</div>
-                <div class="quiz-meta">50 questions · Indexes, query optimization, ACID, PostgreSQL, SQL Server, EF Core</div>
+                <div class="quiz-meta">50 questions · Indexes, query optimization, ACID, PostgreSQL, EF Core</div>
+            </a>
+            <a class="quiz-link" href="javascript-typescript-node.html">
+                <div class="quiz-title">JavaScript, TypeScript & Node.js</div>
+                <div class="quiz-meta">50 questions · Closures, event loop, generics, async, Express, streams</div>
+            </a>
+            <a class="quiz-link" href="react.html">
+                <div class="quiz-title">React</div>
+                <div class="quiz-meta">50 questions · Hooks, rendering, state management, Next.js, patterns</div>
             </a>
         </div>
     </div>

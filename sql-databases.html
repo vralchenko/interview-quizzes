@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL & Databases — Interview Quiz</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 800px; width: 100%; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { margin-bottom: 5px; color: #fff; }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+        .progress-bar { width: 100%; height: 8px; background-color: var(--bg-card); border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--accent); width: 0%; transition: width 0.3s ease; }
+        .card { background-color: var(--bg-card); border-radius: 12px; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+        .card.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .category-badge { display: inline-block; background-color: rgba(59,130,246,0.2); color: #60a5fa; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .question-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 20px; }
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn { background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); color: var(--text-main); padding: 15px 20px; border-radius: 8px; font-size: 1rem; text-align: left; cursor: pointer; transition: all 0.2s; line-height: 1.4; }
+        .option-btn:hover:not(:disabled) { background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+        .option-btn.correct { background-color: rgba(16,185,129,0.2); border-color: var(--success); }
+        .option-btn.wrong { background-color: rgba(239,68,68,0.2); border-color: var(--danger); opacity: 0.7; }
+        .option-btn:disabled { cursor: default; }
+        .explanation { margin-top: 20px; padding: 15px; background-color: rgba(255,255,255,0.05); border-left: 4px solid var(--accent); border-radius: 4px; font-size: 0.95rem; display: none; }
+        .explanation.show { display: block; animation: fadeIn 0.4s; }
+        .controls { margin-top: 25px; display: flex; justify-content: flex-end; }
+        .next-btn, .restart-btn { background-color: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; display: none; }
+        .next-btn.show, .restart-btn.show { display: block; }
+        .next-btn:hover, .restart-btn:hover { background-color: var(--accent-hover); }
+        .score-display { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted); }
+        #results-card { text-align: center; }
+        .final-score { font-size: 4rem; font-weight: 700; color: var(--accent); margin: 20px 0; }
+        #setup-card { text-align: center; }
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 16px; }
+        .nav-btn { background: none; border: 1px solid rgba(255,255,255,0.15); color: var(--text-muted); padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .nav-btn:hover { color: var(--text-main); border-color: var(--accent); background-color: rgba(59,130,246,0.1); }
+        .batch-controls { display: flex; flex-direction: column; gap: 15px; margin: 30px 0; }
+        .batch-btn { background-color: rgba(255,255,255,0.05); border: 2px solid var(--accent); color: var(--text-main); padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; }
+        .batch-btn:hover { background-color: var(--accent); }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SQL & Databases</h1>
+            <p>Indexes, query optimization, transactions, PostgreSQL, SQL Server, EF Core & performance</p>
+        </div>
+
+        <div class="card active" id="setup-card">
+            <h2>50 Questions on SQL & Databases</h2>
+            <p>Covers indexing strategies, query execution plans, ACID, isolation levels, normalization, PostgreSQL internals, SQL Server, EF Core pitfalls, and performance optimization.</p>
+            <div class="batch-controls">
+                <button class="batch-btn" onclick="startQuiz(20)">Random 20-Question Sprint</button>
+                <button class="batch-btn" onclick="startQuiz(50)">Marathon: All 50 Questions</button>
+            </div>
+        </div>
+
+        <div id="quiz-area" style="display: none;">
+            <div class="nav-bar">
+                <a class="nav-btn" href="index.html">&#8592; All Quizzes</a>
+                <button class="nav-btn" onclick="location.reload()">&#8635; Restart</button>
+            </div>
+            <div class="score-display">
+                <span id="q-counter">Question 1 of X</span>
+                <span id="score-tracker">Score: 0</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+            <div id="quiz-container"></div>
+        </div>
+
+        <div class="card" id="results-card">
+            <h2>Assessment Complete!</h2>
+            <div class="final-score" id="final-score-text">0/X</div>
+            <p id="feedback-text" style="font-size: 1.1rem; margin-bottom: 30px;"></p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a class="restart-btn show" href="index.html" style="text-decoration: none;">All Quizzes</a>
+                <button class="restart-btn show" onclick="location.reload()">Restart Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const allQuestions = [
+        // ===== INDEXES: FUNDAMENTALS =====
+        { category: "Indexes", question: "What is the difference between a Clustered and a Non-Clustered index?", options: ["Clustered indexes are faster, Non-Clustered are slower.", "Clustered defines the physical row order on disk (max 1 per table). Non-Clustered is a separate structure with pointers to the physical rows.", "Clustered is for primary keys only, Non-Clustered for foreign keys only.", "There is no practical difference in modern databases."], correctIndex: 1, explanation: "A Clustered index IS the table data sorted by the index key. A Non-Clustered index is a separate B-tree that stores the key + a pointer (RID or clustering key) back to the actual row." },
+        { category: "Indexes", question: "Why can a table have only ONE Clustered index?", options: ["It's an arbitrary database limitation.", "Because the Clustered index determines the physical sort order of rows on disk — data can only be physically sorted one way.", "Because multiple Clustered indexes would use too much memory.", "Actually, modern databases allow multiple Clustered indexes."], correctIndex: 1, explanation: "Rows on disk pages are arranged in the order of the Clustered index key. You can't physically sort the same data two different ways simultaneously." },
+        { category: "Indexes", question: "What is a Covering Index?", options: ["An index that covers all tables in the database.", "An index that includes all columns needed by a query, so the database engine never needs to look up the actual table row (avoids Key Lookup).", "An index on a computed column.", "An index that covers both Clustered and Non-Clustered data."], correctIndex: 1, explanation: "If a query SELECT Name, Email FROM Users WHERE Email = 'x' hits an index on (Email) INCLUDE (Name), all data is in the index leaf. No bookmark lookup needed — huge speed gain." },
+        { category: "Indexes", question: "What is the INCLUDE clause in a Non-Clustered index?", options: ["It includes the index in query plans automatically.", "It adds non-key columns to the leaf level of the index, making it a Covering Index without bloating the B-tree intermediate pages.", "It includes NULL values in the index.", "It forces the query optimizer to use this index."], correctIndex: 1, explanation: "INCLUDE columns live only at the leaf level — they don't affect sort order or tree depth. They prevent expensive Key Lookups for queries that need those extra columns." },
+        { category: "Indexes", question: "What is a Composite Index and when is column order important?", options: ["A composite index spans multiple tables.", "An index on multiple columns. Order matters because the index is sorted left-to-right — queries must use the leftmost prefix to benefit.", "Column order doesn't matter in composite indexes.", "A composite index is the same as multiple single-column indexes."], correctIndex: 1, explanation: "Index on (LastName, FirstName): WHERE LastName = 'Smith' uses it. WHERE FirstName = 'John' does NOT (can't skip the first column). This is the Left Prefix Rule." },
+        { category: "Indexes", question: "What is Index Fragmentation and how does it affect performance?", options: ["Fragmentation means the index has too many columns.", "Over time, inserts/updates/deletes cause index pages to become non-contiguous on disk, increasing I/O. REBUILD or REORGANIZE fixes it.", "Fragmentation only affects Non-Clustered indexes.", "Fragmentation improves query speed by spreading data."], correctIndex: 1, explanation: "Logical fragmentation means pages are out of order. The disk head jumps around instead of reading sequentially. REBUILD recreates the index; REORGANIZE defragments in-place." },
+        { category: "Indexes", question: "What is a Filtered Index?", options: ["An index that filters out duplicate values.", "An index with a WHERE clause that only indexes rows matching a condition, reducing index size and improving performance for targeted queries.", "An index that filters queries at runtime.", "A temporary index created for a single query."], correctIndex: 1, explanation: "CREATE INDEX IX_Active ON Orders(OrderDate) WHERE Status = 'Active'. Only active orders are indexed — much smaller, faster, and less maintenance than indexing all rows." },
+        { category: "Indexes", question: "When can adding an index actually HURT performance?", options: ["Indexes never hurt performance.", "On tables with heavy INSERT/UPDATE/DELETE activity — every write must also update all indexes, adding overhead.", "Only when the index exceeds 1GB.", "Only on temporary tables."], correctIndex: 1, explanation: "Each index is a separate data structure that must be maintained on every write. A table with 10 indexes means each INSERT updates 10 B-trees. Write-heavy tables need fewer, targeted indexes." },
+        { category: "Indexes", question: "What is a Unique Index?", options: ["An index that stores only one copy of each page.", "An index that enforces uniqueness on the indexed columns — any duplicate insert will be rejected by the database engine.", "An index created by a unique algorithm.", "A Non-Clustered index with no duplicates allowed in the INCLUDE columns."], correctIndex: 1, explanation: "Unique indexes serve dual purpose: query performance AND data integrity. A UNIQUE constraint in SQL Server automatically creates a Unique Index behind the scenes." },
+        { category: "Indexes", question: "What is the difference between a B-Tree index and a Hash index?", options: ["They're the same structure with different names.", "B-Tree supports range queries (>, <, BETWEEN) and sorting. Hash indexes only support exact equality lookups (=) but are O(1) for those.", "Hash indexes are always faster.", "B-Tree is for strings, Hash is for numbers."], correctIndex: 1, explanation: "B-Tree is the default in SQL Server and PostgreSQL because it handles both equality and range queries. Hash indexes (e.g., in PostgreSQL) are only useful for pure equality checks." },
+
+        // ===== QUERY OPTIMIZATION =====
+        { category: "Query Optimization", question: "What does EXPLAIN ANALYZE do in PostgreSQL?", options: ["It explains the query syntax.", "It actually executes the query and shows the real execution plan with actual row counts, timing, and operations (Seq Scan, Index Scan, etc.).", "It analyzes the table statistics without running the query.", "It optimizes the query automatically."], correctIndex: 1, explanation: "Plain EXPLAIN only estimates. EXPLAIN ANALYZE forces execution and shows actual vs. estimated rows, actual time per node — the ultimate tool for debugging slow queries." },
+        { category: "Query Optimization", question: "What is the difference between a Seq Scan and an Index Scan?", options: ["Seq Scan uses an index, Index Scan doesn't.", "Seq Scan reads every row in the table sequentially. Index Scan uses a B-tree to jump directly to matching rows.", "They perform identically on small tables.", "Index Scan always faster than Seq Scan."], correctIndex: 1, explanation: "Seq Scan reads the entire table — fine for small tables or queries returning most rows. Index Scan navigates the B-tree — much faster when selecting a small fraction of rows." },
+        { category: "Query Optimization", question: "When might the query optimizer CHOOSE a Seq Scan over an Index Scan?", options: ["Never — Index Scan is always preferred.", "When the query returns a large percentage of rows (e.g., >10-20%), the overhead of random I/O from index lookups exceeds the cost of a sequential full table scan.", "Only when the index is corrupted.", "Only on tables with fewer than 100 rows."], correctIndex: 1, explanation: "If you SELECT * FROM Orders WHERE Status IN ('Active','Pending','Processing') and that's 80% of rows, sequential I/O reading the whole table is cheaper than 80% random lookups via the index." },
+        { category: "Query Optimization", question: "What is a Key Lookup (Bookmark Lookup) and why is it expensive?", options: ["It's a lookup in the application's key vault.", "After finding a row via Non-Clustered index, the engine must go to the Clustered index to fetch additional columns not in the index — each lookup is random I/O.", "It's a lookup in the foreign key table.", "It only happens with composite keys."], correctIndex: 1, explanation: "If your Non-Clustered index has (Email) but the query also needs Name, the engine finds the row via Email index, then does a random seek into the Clustered index for Name. Fix: INCLUDE (Name)." },
+        { category: "Query Optimization", question: "What is Parameter Sniffing in SQL Server?", options: ["A security vulnerability where parameters are exposed.", "SQL Server compiles a query plan based on the FIRST parameter values it sees, which may be terrible for subsequent calls with different values.", "A technique to optimize parameterized queries.", "A debugging feature in SSMS."], correctIndex: 1, explanation: "First call: @Status='Rare' → Index Scan plan. Cached plan reused for @Status='Active' (90% of rows) → catastrophic performance. Fix: OPTION(RECOMPILE), OPTIMIZE FOR, or plan guides." },
+        { category: "Query Optimization", question: "What does the SQL Server Execution Plan's 'Estimated Subtree Cost' tell you?", options: ["The actual time in milliseconds.", "A relative cost unit the optimizer uses to compare plan alternatives — higher cost = more expensive estimated operations.", "The dollar cost of running the query on Azure.", "The number of rows returned."], correctIndex: 1, explanation: "Cost is unitless and relative. A query with cost 10 is roughly 10x more expensive than cost 1. Compare costs between plan alternatives to understand optimizer choices." },
+        { category: "Query Optimization", question: "Why is SELECT * considered harmful for performance?", options: ["It uses more CPU to parse the asterisk.", "It fetches all columns, preventing Covering Index optimization, increasing I/O, network transfer, and memory usage unnecessarily.", "It's only harmful in production, not development.", "Modern databases optimize SELECT * automatically."], correctIndex: 1, explanation: "SELECT Name, Email can be served from a Covering Index (no table access). SELECT * forces a Key Lookup or Clustered Index Scan to fetch every column — much slower." },
+        { category: "Query Optimization", question: "What is the difference between EXISTS and IN for subqueries?", options: ["They always produce the same execution plan.", "EXISTS short-circuits (stops at first match). IN materializes the entire subquery result. EXISTS is typically faster for correlated subqueries.", "IN is always faster because it uses indexes.", "EXISTS is deprecated in modern SQL."], correctIndex: 1, explanation: "EXISTS: for each outer row, check if ANY inner row matches — stop immediately on first hit. IN: build the full list first, then check membership. With large subqueries, EXISTS often wins." },
+        { category: "Query Optimization", question: "What is a Sargable query predicate?", options: ["A query that uses SARG (Search ARGument) keywords.", "A WHERE condition that allows the database to use an index seek — no functions wrapping the indexed column (e.g., WHERE Col = 5, not WHERE YEAR(Col) = 2024).", "Any query that returns less than 1000 rows.", "A predicate using LIKE with a leading wildcard."], correctIndex: 1, explanation: "WHERE YEAR(DateCol) = 2024 is non-sargable — the function prevents index usage. Rewrite as WHERE DateCol >= '2024-01-01' AND DateCol < '2025-01-01' to enable Index Seek." },
+        { category: "Query Optimization", question: "How does an Index Seek differ from an Index Scan?", options: ["They're the same operation.", "Seek navigates the B-tree to find specific rows (O(log n)). Scan reads every leaf page of the index sequentially (O(n)).", "Seek is for Clustered indexes, Scan for Non-Clustered.", "Scan is always faster for large tables."], correctIndex: 1, explanation: "Seek: jump to exactly the rows needed via the B-tree. Scan: read all index pages. A Seek on a million-row index touches maybe 3-4 pages. A Scan touches all of them." },
+
+        // ===== TRANSACTIONS & ACID =====
+        { category: "Transactions", question: "What does ACID stand for in database transactions?", options: ["Asynchronous, Concurrent, Isolated, Durable.", "Atomicity, Consistency, Isolation, Durability.", "Automated, Cached, Indexed, Distributed.", "Abstract, Controlled, Integrated, Dependent."], correctIndex: 1, explanation: "Atomicity: all or nothing. Consistency: valid state to valid state. Isolation: concurrent transactions don't interfere. Durability: committed data survives crashes." },
+        { category: "Transactions", question: "What is a Dirty Read?", options: ["Reading data from an unencrypted connection.", "Transaction A reads data that Transaction B has modified but NOT YET COMMITTED — if B rolls back, A has read data that never officially existed.", "Reading data that contains NULL values.", "Reading from a table without indexes."], correctIndex: 1, explanation: "Read Uncommitted isolation level allows dirty reads. Read Committed (the default in SQL Server and PostgreSQL) prevents them by only showing committed data." },
+        { category: "Transactions", question: "What is a Phantom Read?", options: ["A read that returns no results.", "Transaction A runs the same query twice, and the second time sees NEW rows that Transaction B inserted and committed between the two reads.", "A read from a deleted table.", "A read that takes longer than 30 seconds."], correctIndex: 1, explanation: "Repeatable Read prevents rows from changing but not new rows appearing. Only Serializable (or PostgreSQL's Repeatable Read with MVCC) prevents phantom reads." },
+        { category: "Transactions", question: "What is the difference between Read Committed and Repeatable Read isolation levels?", options: ["No practical difference.", "Read Committed: see only committed data (but re-reading may show different results). Repeatable Read: guarantees the same rows return the same values if re-read within the transaction.", "Repeatable Read is slower in all cases.", "Read Committed allows dirty reads."], correctIndex: 1, explanation: "Read Committed takes short-lived locks. Repeatable Read holds read locks until transaction end, preventing other transactions from modifying those rows." },
+        { category: "Transactions", question: "What is a Deadlock?", options: ["A lock that never expires.", "Two transactions each hold a lock the other needs, creating a circular wait — neither can proceed. The database kills one (deadlock victim) to resolve it.", "A transaction that takes too long.", "A lock on a table that prevents all reads."], correctIndex: 1, explanation: "Transaction A locks Row 1, needs Row 2. Transaction B locks Row 2, needs Row 1. Circular dependency. The DB detects it and rolls back the cheaper transaction." },
+        { category: "Transactions", question: "How does PostgreSQL's MVCC (Multi-Version Concurrency Control) work?", options: ["It locks rows like SQL Server.", "Instead of locking, each transaction sees a snapshot of the data. Writers create new row versions; readers see the version valid at their transaction start time.", "MVCC prevents all concurrent access.", "MVCC only works with Serializable isolation."], correctIndex: 1, explanation: "MVCC means readers never block writers and writers never block readers. Each row has xmin/xmax transaction IDs. Old versions are cleaned up by VACUUM." },
+        { category: "Transactions", question: "What is the purpose of the WAL (Write-Ahead Log)?", options: ["To log application errors.", "To ensure durability: changes are written to the log BEFORE being applied to data files, so the database can recover from crashes by replaying the log.", "To track user activity for auditing.", "To optimize read queries."], correctIndex: 1, explanation: "WAL guarantees that even if the server crashes mid-write, no committed data is lost. On recovery, the DB replays WAL entries to bring data files up to date." },
+
+        // ===== POSTGRESQL SPECIFIC =====
+        { category: "PostgreSQL", question: "What is the VACUUM command in PostgreSQL?", options: ["It removes all data from a table.", "It cleans up dead tuples (old row versions from MVCC updates/deletes), recovers disk space, and updates statistics for the query planner.", "It optimizes indexes.", "It creates a backup of the database."], correctIndex: 1, explanation: "MVCC never overwrites rows in place — it creates new versions and marks old ones as dead. VACUUM physically removes dead tuples. autovacuum handles this automatically in most cases." },
+        { category: "PostgreSQL", question: "What is the difference between VACUUM and VACUUM FULL?", options: ["VACUUM FULL is just a verbose version.", "VACUUM reclaims space within existing pages (doesn't return space to OS). VACUUM FULL rewrites the entire table, reclaiming all space but requires an exclusive lock.", "VACUUM FULL only works on large tables.", "There is no difference."], correctIndex: 1, explanation: "Regular VACUUM: fast, no lock, marks space as reusable within the table. VACUUM FULL: slow, locks table, physically compacts it and returns space to the OS. Use FULL only when desperate." },
+        { category: "PostgreSQL", question: "What are PostgreSQL's table statistics and why do they matter?", options: ["Statistics track user connections.", "pg_statistic stores data distribution info (most common values, histograms, null fractions) that the query planner uses to choose optimal execution plans.", "Statistics only matter for monitoring dashboards.", "Statistics are only updated during VACUUM FULL."], correctIndex: 1, explanation: "ANALYZE updates statistics. Without accurate statistics, the planner might estimate 10 rows when there are 10 million, choosing a terrible plan. autovacuum runs ANALYZE automatically." },
+        { category: "PostgreSQL", question: "What is a Partial Index in PostgreSQL?", options: ["An incomplete index that's still being built.", "An index with a WHERE clause that only includes rows matching a condition, saving space and improving write/read performance for targeted queries.", "An index on only some columns of a table.", "A temporary index."], correctIndex: 1, explanation: "CREATE INDEX idx_active ON orders(created_at) WHERE status = 'active'. If only 5% of orders are active, this index is 20x smaller than indexing all orders." },
+        { category: "PostgreSQL", question: "What is a GIN index and when should you use it?", options: ["GIN is for geographic data only.", "GIN (Generalized Inverted Index) is optimized for values containing multiple elements — full-text search, JSONB queries, array containment.", "GIN replaces B-tree indexes entirely.", "GIN indexes only work with integer columns."], correctIndex: 1, explanation: "GIN maps each element to the rows containing it. Perfect for: WHERE tags @> '{sql}' (array), WHERE document @@ 'search term' (tsvector), WHERE jsonb_col @> '{\"key\": \"val\"}'." },
+        { category: "PostgreSQL", question: "What is the difference between JSONB and JSON types in PostgreSQL?", options: ["They're identical.", "JSON stores raw text (preserves formatting, slower queries). JSONB stores binary parsed format (loses whitespace, supports indexing, much faster queries).", "JSONB is deprecated in favor of JSON.", "JSON supports indexes, JSONB doesn't."], correctIndex: 1, explanation: "Always use JSONB unless you need to preserve exact JSON formatting. JSONB supports GIN indexes, efficient @>, ?, and ?& operators. JSON must reparse on every access." },
+
+        // ===== SQL SERVER SPECIFIC =====
+        { category: "SQL Server", question: "What is a Columnstore Index in SQL Server?", options: ["An index on a single column.", "A columnar storage format that stores data column-by-column instead of row-by-row, enabling massive compression and fast analytical queries on large datasets.", "A regular index stored in a different file.", "An index that only works with varchar columns."], correctIndex: 1, explanation: "Row-store: reads entire rows. Column-store: reads only needed columns. Aggregating SUM(Amount) over 100M rows reads only the Amount column — 10-100x faster for analytics." },
+        { category: "SQL Server", question: "What are Execution Plan operators you should watch out for?", options: ["All operators are equally performant.", "Table Scan (no index used), Key Lookup (missing covering index), Sort (missing index for ORDER BY), Hash Match (potentially large join with no index).", "Only Nested Loop indicates a problem.", "Execution plan operators don't affect performance."], correctIndex: 1, explanation: "Table Scan = consider adding an index. Key Lookup = add INCLUDE columns. Sort with high cost = add index matching ORDER BY. These are the most common performance killers." },
+        { category: "SQL Server", question: "What is the difference between a Temp Table (#table) and a Table Variable (@table)?", options: ["They're identical.", "Temp tables have statistics and can be indexed. Table variables don't have distribution statistics and the optimizer always estimates 1 row, potentially causing bad plans.", "Table variables are always faster.", "Temp tables persist across sessions."], correctIndex: 1, explanation: "For small datasets (<100 rows), @table is fine. For larger sets, #table is better because SQL Server has accurate statistics and can choose proper join strategies." },
+        { category: "SQL Server", question: "What is TempDB contention and how do you mitigate it?", options: ["TempDB is never a bottleneck.", "Heavy concurrent use of temp tables, sorting, and hash joins causes latch contention on TempDB allocation pages. Mitigate with multiple TempDB files and trace flags.", "TempDB contention only happens on Linux.", "Simply increase TempDB file size."], correctIndex: 1, explanation: "Best practice: create one TempDB data file per CPU core (up to 8), all equal size, with autogrowth. Trace flag 1118 (pre-SQL 2016) avoids mixed extent allocation contention." },
+
+        // ===== EF CORE & ORM PITFALLS =====
+        { category: "EF Core", question: "What is the N+1 Query Problem?", options: ["Having more than N+1 tables in a database.", "Loading a list of N entities, then for each entity firing a separate query to load related data — resulting in 1 + N database round-trips instead of 1-2.", "A problem with NULL values in queries.", "Having N+1 indexes on a table."], correctIndex: 1, explanation: "foreach(var order in orders) { var items = order.Items; } — if Items is lazy-loaded, each iteration fires a SELECT. Fix: use .Include(o => o.Items) for eager loading." },
+        { category: "EF Core", question: "What does AsNoTracking() do and when should you use it?", options: ["It disables SQL logging.", "It tells EF Core not to track entities in the Change Tracker, reducing memory overhead significantly for read-only queries.", "It disables foreign key tracking.", "It prevents entities from being cached."], correctIndex: 1, explanation: "Change Tracker creates a snapshot of every loaded entity for detecting changes. For read-only API responses, that's pure waste. AsNoTracking() skips it — 30-50% memory reduction." },
+        { category: "EF Core", question: "Why is IQueryable<T> preferred over IEnumerable<T> for database queries?", options: ["IQueryable is always faster.", "IQueryable builds an expression tree translated to SQL — filtering happens in the database. IEnumerable pulls ALL rows to memory first, then filters in C#.", "IEnumerable doesn't support WHERE clauses.", "There is no practical difference."], correctIndex: 1, explanation: "dbContext.Users.Where(u => u.Active) as IQueryable: generates WHERE Active = 1 in SQL. Cast to IEnumerable first: downloads ALL users, then filters in memory. Catastrophic for large tables." },
+        { category: "EF Core", question: "How do you handle bulk inserts (100K+ rows) efficiently in .NET?", options: ["Use a foreach loop with SaveChanges() per entity.", "Bypass EF Core: use SqlBulkCopy (SQL Server) or Npgsql COPY (PostgreSQL) which stream binary data directly, inserting 100K+ rows per second.", "Use AddRange() — it's optimized for bulk.", "Insert into a JSON column and parse later."], correctIndex: 1, explanation: "EF Core generates individual INSERT statements — 100K rows = 100K separate SQL commands. Bulk utilities open a binary streaming channel, bypassing SQL parsing entirely." },
+        { category: "EF Core", question: "What is the Cartesian Explosion problem with multiple Include()?", options: ["It only happens with circular references.", "When including multiple collection navigations, EF Core joins them in SQL — the result set becomes a Cartesian product, returning massively duplicated data.", "It's a bug fixed in EF Core 8.", "It only affects In-Memory databases."], correctIndex: 1, explanation: "Include(o => o.Items).Include(o => o.Payments): if an order has 10 items and 5 payments, SQL returns 50 rows per order. Fix: use AsSplitQuery() to send separate queries." },
+        { category: "EF Core", question: "What does AsSplitQuery() do?", options: ["It splits the database into shards.", "Instead of one massive JOIN query, it sends separate SQL queries for each Include() and stitches results in memory, avoiding Cartesian explosion.", "It splits transactions across multiple connections.", "It splits results into pages."], correctIndex: 1, explanation: "Query 1: SELECT Orders. Query 2: SELECT Items WHERE OrderId IN (...). Query 3: SELECT Payments WHERE OrderId IN (...). Multiple round-trips but much less data transferred." },
+        { category: "EF Core", question: "What are Global Query Filters in EF Core?", options: ["Filters applied to all queries across all databases.", "Filters defined in OnModelCreating that are automatically applied to every query for an entity (e.g., soft delete: .HasQueryFilter(e => !e.IsDeleted)).", "CORS filters for API queries.", "Filters that prevent SQL injection."], correctIndex: 1, explanation: "Every query for that entity automatically includes the filter. No developer can accidentally load deleted records. Use .IgnoreQueryFilters() when you explicitly need all records." },
+        { category: "EF Core", question: "Why avoid calling Database.Migrate() at application startup?", options: ["It's too slow.", "In multi-pod Kubernetes deployments, multiple instances race to apply the same migration, causing database locks, duplicate key errors, or corruption.", "Migrations should never be automated.", "It only works with SQL Server."], correctIndex: 1, explanation: "Apply migrations during CI/CD pipeline deployment (before pods start) using a dedicated migration job or tool like Flyway/DbUp. One executor, no race conditions." },
+
+        // ===== NORMALIZATION & DESIGN =====
+        { category: "Database Design", question: "What is Third Normal Form (3NF)?", options: ["A table with at most three columns.", "Every non-key column depends on the key, the whole key, and nothing but the key — eliminating transitive dependencies.", "A table with three indexes.", "The third step in database creation."], correctIndex: 1, explanation: "1NF: atomic values. 2NF: no partial key dependencies. 3NF: no transitive dependencies (non-key columns must depend directly on the primary key, not on other non-key columns)." },
+        { category: "Database Design", question: "When is denormalization appropriate?", options: ["Never — always normalize to 3NF.", "When read performance is critical and the cost of joins is too high — pre-compute and store redundant data to avoid expensive joins at query time.", "Only in NoSQL databases.", "When the database has fewer than 10 tables."], correctIndex: 1, explanation: "Reporting tables, read models in CQRS, materialized views — all use denormalization. Trade-off: faster reads, but data redundancy and more complex writes." },
+        { category: "Database Design", question: "What is a Materialized View?", options: ["A regular view with a different name.", "A precomputed view stored as a physical table that is periodically refreshed, providing fast access to complex aggregation results.", "A view that shows only material/inventory data.", "A view that can be updated with INSERT."], correctIndex: 1, explanation: "A regular view re-executes its query every time. A Materialized View stores results physically — instant reads but stale until refreshed. PostgreSQL: REFRESH MATERIALIZED VIEW." },
+        { category: "Database Design", question: "What is the difference between a Surrogate Key and a Natural Key?", options: ["They're different names for the same thing.", "Surrogate: system-generated (auto-increment, GUID) with no business meaning. Natural: derived from business data (email, SSN) with inherent meaning.", "Surrogate keys are only for NoSQL.", "Natural keys are always better."], correctIndex: 1, explanation: "Surrogate keys (INT/BIGINT identity) are stable, compact, and don't change. Natural keys (email) can change and may be large. Most designs use surrogates for PKs." },
+
+        // ===== ADVANCED PERFORMANCE =====
+        { category: "Performance", question: "What is Connection Pooling and why is it critical?", options: ["It pools multiple databases together.", "It maintains a cache of open database connections for reuse, avoiding the expensive overhead of opening/closing TCP connections for each request.", "It limits the number of users who can connect.", "It only matters for cloud databases."], correctIndex: 1, explanation: "Opening a DB connection: DNS lookup + TCP handshake + TLS + authentication = ~50-100ms. Connection pool: grab an already-open connection in <1ms. ADO.NET handles this automatically." },
+        { category: "Performance", question: "What is Database Sharding?", options: ["Splitting a database backup into pieces.", "Horizontally partitioning data across multiple database instances, where each shard holds a subset of rows (e.g., users A-M on shard 1, N-Z on shard 2).", "Encrypting specific columns.", "Creating read replicas."], correctIndex: 1, explanation: "When a single database can't handle the load, sharding distributes data. Challenge: cross-shard queries, rebalancing, and choosing a good shard key." },
+        { category: "Performance", question: "What is a Read Replica and when would you use it?", options: ["A backup database that's never read.", "A copy of the primary database that handles read queries, offloading the primary for writes. Data is replicated asynchronously (with small lag).", "A database that only allows SELECT statements.", "A replica that stores data in a read-optimized format."], correctIndex: 1, explanation: "If 90% of your traffic is reads, send them to 3 read replicas. Only writes go to the primary. The replicas are slightly behind (eventual consistency) but drastically reduce primary load." },
+        { category: "Performance", question: "What is the Cache-Aside pattern for database optimization?", options: ["Storing the database in a cache.", "Check Redis first → return if hit. On miss → query database → store result in Redis → return. The application manages the cache explicitly.", "Redis automatically caches all queries.", "Cache-Aside only works with NoSQL databases."], correctIndex: 1, explanation: "The application code is responsible for reading from cache, detecting misses, querying the DB, and populating the cache. Simple but effective. Set a TTL to prevent stale data." },
+        { category: "Performance", question: "What is query plan caching and how can it backfire?", options: ["Query plans are never cached.", "The database caches compiled query plans for reuse. It backfires when a plan optimized for one set of parameter values is reused for very different values (Parameter Sniffing).", "Plan caching only helps stored procedures.", "Cached plans are always optimal."], correctIndex: 1, explanation: "Prepared statement with WHERE Status = @p: first call with @p='Rare' generates Index Seek plan. Reused for @p='Common' (99% of rows) — Index Seek does 99% random lookups instead of a Seq Scan." },
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedQuestions = [];
+    let currentTotalQuestions = 20;
+
+    const setupCard = document.getElementById('setup-card');
+    const quizArea = document.getElementById('quiz-area');
+    const quizContainer = document.getElementById('quiz-container');
+    const qCounter = document.getElementById('q-counter');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressFill = document.getElementById('progress');
+    const resultsCard = document.getElementById('results-card');
+
+    function shuffleArray(array) {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+    }
+
+    window.startQuiz = function(numQuestions) {
+        currentTotalQuestions = numQuestions;
+        selectedQuestions = shuffleArray(allQuestions).slice(0, currentTotalQuestions);
+        currentQuestionIndex = 0;
+        score = 0;
+        setupCard.classList.remove('active');
+        setupCard.style.display = 'none';
+        quizArea.style.display = 'block';
+        resultsCard.classList.remove('active');
+        updateScoreboard();
+        renderQuestion();
+    };
+
+    function updateScoreboard() {
+        qCounter.innerText = `Question ${currentQuestionIndex + 1} of ${currentTotalQuestions}`;
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex) / currentTotalQuestions) * 100}%`;
+    }
+
+    function renderQuestion() {
+        quizContainer.innerHTML = '';
+        const q = selectedQuestions[currentQuestionIndex];
+        const indices = q.options.map((_, i) => i);
+        for (let i = indices.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [indices[i], indices[j]] = [indices[j], indices[i]]; }
+        const shuffledOptions = indices.map(i => q.options[i]);
+        const newCorrectIndex = indices.indexOf(q.correctIndex);
+        const card = document.createElement('div');
+        card.className = 'card active';
+        card.innerHTML = `
+            <div class="category-badge">${q.category}</div>
+            <div class="question-text">${q.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+            <div class="options">
+                ${shuffledOptions.map((opt, i) => `<button class="option-btn" onclick="checkAnswer(${i}, ${newCorrectIndex}, this)">${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</button>`).join('')}
+            </div>
+            <div class="explanation" id="expl-${currentQuestionIndex}"><strong>Explanation:</strong> ${q.explanation}</div>
+            <div class="controls"><button class="next-btn" id="next-${currentQuestionIndex}" onclick="nextQuestion()">Continue</button></div>
+        `;
+        quizContainer.appendChild(card);
+        updateScoreboard();
+    }
+
+    window.checkAnswer = function(selectedIndex, correctIndex, btnElement) {
+        const buttons = btnElement.parentElement.querySelectorAll('.option-btn');
+        const nextBtn = document.getElementById(`next-${currentQuestionIndex}`);
+        const explanation = document.getElementById(`expl-${currentQuestionIndex}`);
+        buttons.forEach(b => b.disabled = true);
+        if (selectedIndex === correctIndex) { btnElement.classList.add('correct'); score++; }
+        else { btnElement.classList.add('wrong'); buttons[correctIndex].classList.add('correct'); }
+        explanation.classList.add('show');
+        nextBtn.classList.add('show');
+        scoreTracker.innerText = `Score: ${score}`;
+        progressFill.style.width = `${((currentQuestionIndex + 1) / currentTotalQuestions) * 100}%`;
+    };
+
+    window.nextQuestion = function() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < currentTotalQuestions) renderQuestion();
+        else showResults();
+    };
+
+    function showResults() {
+        quizArea.style.display = 'none';
+        document.getElementById('final-score-text').innerText = `${score} / ${currentTotalQuestions}`;
+        let percentage = score / currentTotalQuestions;
+        let feedback = percentage >= 0.8 ? "Outstanding! You have deep knowledge of database internals, indexing strategies, and query optimization." :
+            percentage >= 0.6 ? "Solid foundation! Review index types (Covering, Filtered, Composite), execution plans, and isolation levels." :
+            "Keep studying! Focus on how indexes work (B-tree, Clustered vs Non-Clustered), EXPLAIN ANALYZE, and the N+1 problem.";
+        document.getElementById('feedback-text').innerText = feedback;
+        resultsCard.classList.add('active');
+    }
+    </script>
+</body>
+</html>

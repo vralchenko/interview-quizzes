@@ -88,6 +88,26 @@
             color: var(--text-muted);
             font-size: 0.85rem;
         }
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer a:hover { color: var(--text-main); }
+        .footer .contacts {
+            margin-top: 6px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
     </style>
 </head>
 <body>
@@ -103,6 +123,14 @@
         </div>
         <p class="subtitle" id="page-subtitle">Technical interview preparation — self-assessment quizzes</p>
         <div class="quiz-grid" id="quiz-grid"></div>
+        <div class="footer">
+            <div>&copy; 2025 Viktor Ralchenko</div>
+            <div class="contacts">
+                <a href="mailto:vralchenko@gmail.com">vralchenko@gmail.com</a>
+                <a href="https://www.linkedin.com/in/victoralchenko/" target="_blank">LinkedIn</a>
+                <a href="https://github.com/vralchenko" target="_blank">GitHub</a>
+            </div>
+        </div>
     </div>
 
     <script>

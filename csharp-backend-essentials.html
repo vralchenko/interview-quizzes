@@ -141,7 +141,25 @@ function renderUI() {
     document.getElementById('nav-restart').innerHTML = '&#8635; ' + t.restart.replace(/^.*?\s/, '');
     document.getElementById('res-all').textContent = t.allBtn;
     document.getElementById('res-restart').textContent = t.restartBtn;
-    if (selectedQuestions.length > 0) showQuestion();
+    if (selectedQuestions.length > 0) retranslateQuestion();
+}
+
+function retranslateQuestion() {
+    const q = selectedQuestions[currentQuestionIndex]; if (!q) return;
+    const lang = currentLang, t = ui[lang];
+    const qText = q.question[lang] || q.question.en;
+    const opts = q.options[lang] || q.options.en;
+    const expl = q.explanation[lang] || q.explanation.en;
+    const card = document.querySelector('#quiz-container .card'); if (!card) return;
+    card.querySelector('.question-text').innerHTML = qText;
+    const btns = card.querySelectorAll('.option-btn');
+    opts.forEach((o, i) => { if (btns[i]) btns[i].innerHTML = o; });
+    const explEl = document.getElementById('explanation');
+    if (explEl) explEl.innerHTML = `<strong>${t.explanation}</strong> ${expl}`;
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) nextBtn.textContent = currentQuestionIndex < selectedQuestions.length - 1 ? t.next : t.complete;
+    document.getElementById('q-counter').textContent = `${t.question} ${currentQuestionIndex + 1} ${t.of} ${selectedQuestions.length}`;
+    document.getElementById('score-tracker').textContent = `${t.score}: ${score}/${currentQuestionIndex}`;
 }
 
 function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }

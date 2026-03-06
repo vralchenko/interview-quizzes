@@ -120,10 +120,10 @@ const allQuestions = [
 ];
 
 let currentLang = localStorage.getItem('quizLang') || 'en';
-let currentQuestionIndex = 0, score = 0, selectedQuestions = [], currentTotalQuestions = 20;
+let currentQuestionIndex = 0, score = 0, selectedQuestions = [], currentTotalQuestions = 20, currentShuffledIdx = [];
 const setupCard = document.getElementById('setup-card'), quizArea = document.getElementById('quiz-area'), quizContainer = document.getElementById('quiz-container'), qCounter = document.getElementById('q-counter'), scoreTracker = document.getElementById('score-tracker'), progressFill = document.getElementById('progress'), resultsCard = document.getElementById('results-card');
 
-function setLang(lang) { currentLang = lang; localStorage.setItem('quizLang', lang); applyLang(); }
+function setLang(lang) { currentLang = lang; localStorage.setItem('quizLang', lang); applyLang(); if (quizArea.style.display === 'block') { retranslateQuestion(); updateScoreboard(); } }
 function applyLang() {
     const t = ui[currentLang];
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === currentLang));
@@ -147,6 +147,22 @@ window.startQuiz = function(num) { currentTotalQuestions = num; selectedQuestion
 
 function updateScoreboard() { const t = ui[currentLang]; qCounter.innerText = `${t.question} ${currentQuestionIndex+1} ${t.of} ${currentTotalQuestions}`; scoreTracker.innerText = `${t.score}: ${score}`; progressFill.style.width = `${(currentQuestionIndex/currentTotalQuestions)*100}%`; }
 
+function retranslateQuestion() {
+    const q = selectedQuestions[currentQuestionIndex]; if (!q) return;
+    const lang = currentLang, t = ui[lang];
+    const qText = q.question[lang] || q.question.en;
+    const opts = q.options[lang] || q.options.en;
+    const expl = q.explanation[lang] || q.explanation.en;
+    const card = quizContainer.querySelector('.card'); if (!card) return;
+    card.querySelector('.question-text').innerHTML = qText.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    const btns = card.querySelectorAll('.option-btn');
+    currentShuffledIdx.forEach((origI, btnI) => { if (btns[btnI]) btns[btnI].innerHTML = (opts[origI] || '').replace(/</g,"&lt;").replace(/>/g,"&gt;"); });
+    const explEl = document.getElementById(`expl-${currentQuestionIndex}`);
+    if (explEl) explEl.innerHTML = `<strong>${t.explanation}</strong> ${expl}`;
+    const nextBtn = document.getElementById(`next-${currentQuestionIndex}`);
+    if (nextBtn) nextBtn.textContent = t.next;
+}
+
 function renderQuestion() {
     quizContainer.innerHTML = '';
     const q = selectedQuestions[currentQuestionIndex];
@@ -155,6 +171,7 @@ function renderQuestion() {
     const opts = q.options[lang] || q.options.en;
     const expl = q.explanation[lang] || q.explanation.en;
     const idx = opts.map((_,i)=>i); for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+    currentShuffledIdx = idx;
     const so = idx.map(i=>opts[i]), ci = idx.indexOf(q.correctIndex);
     const card = document.createElement('div'); card.className = 'card active';
     const t = ui[currentLang];
